@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>てるくに勤怠システム</title>
+</head>
+<body>
+<h1>てるくに勤怠システム</h1>
+<h2>ログインしてください</h2>
+<div id="message"></div>
+<div>
+    <form id="loginForm" method="post" action="/homePage/">
+        {% csrf_token %}
+        <input type="text" id="user" name="user" placeholder="アカウント">
+        <input type="password" id="password" name="password" placeholder="パスワード">
+        <input type="submit" value="ログイン" onclick="checkEmail(event)">
+    </form>
+</div>
+
+<script>
+function checkEmail(event) {
+    event.preventDefault(); // フォームのデフォルトの動作を停止する
+
+    // 入力されたアカウント情報を取得
+    var user = document.getElementById("user").value;
+
+    // アカウントが "@levels.co.jp" で終わっているかどうかを確認
+    if (user.endsWith("@levels.co.jp")) {
+        // バックエンドに情報を送信するなどの処理を行う
+        document.getElementById("message").innerHTML = "バック側に情報を送信します...";
+        document.getElementById("loginForm").submit(); // フォームを送信
+    } else {
+        // 有効なアカウントを入力するようにメッセージを表示
+        document.getElementById("message").innerHTML = "有効なアカウントを入力してください";
+    }
+}
+</script>
+
+</body>
+</html>
