@@ -9,9 +9,9 @@ def validate_account_id(value):
         raise ValidationError('アカウントIDは@levels.co.jpで終わる必要があります。')
 
 class user_master(models.Model):
-    user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False)
-    account_id = models.EmailField(max_length=256, unique=True, validators=[validate_account_id])
-    pwd = models.CharField(max_length=256)
+    user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False) # 一意
+    account_id = models.EmailField(max_length=256, unique=True, validators=[validate_account_id]) # @levels.co.jp判断つき
+    password = models.CharField(max_length=256)
     name = models.CharField(max_length=256)
     age = models.PositiveSmallIntegerField()  # 年齢を示すフィールド
     GENDER_CHOICES = [
