@@ -9,21 +9,21 @@ def validate_account_id(value):
         raise ValidationError('アカウントIDは@levels.co.jpで終わる必要があります。')
 
 class user_master(models.Model):
-    user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False) # 一意
+    user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False) # 一意､プライマリーキー
     account_id = models.EmailField(max_length=256, unique=True, validators=[validate_account_id]) # @levels.co.jp判断つき
-    password = models.CharField(max_length=256)
-    name = models.CharField(max_length=256)
+    password = models.CharField(max_length=256) # パスワード
+    name = models.CharField(max_length=256) # 名前
     age = models.PositiveSmallIntegerField()  # 年齢を示すフィールド
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
         ('O', 'Other'),
     ]
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES) # 性別略
     phone_number = models.CharField(max_length=11)  # 電話番号を示すフィールド
-    joined = models.DateField()
-    department_id = models.PositiveIntegerField()
-    department = models.CharField(max_length=256)
+    joined = models.DateField() # 入社日
+    department_id = models.PositiveIntegerField() # 部門番号
+    department = models.CharField(max_length=256) # 部門名称
 
     def save(self, *args, **kwargs):
         if not self.user_id:
