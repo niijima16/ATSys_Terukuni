@@ -11,9 +11,9 @@ def validate_account_id(value):
 
 class user_master(models.Model):
     user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False)  # 一意､プライマリーキー
-    account_id = models.EmailField(max_length=256, unique=True, validators=[validate_account_id])  # @levels.co.jp判断つき
-    password = models.CharField(max_length=256)  # パスワード
-    name = models.CharField(max_length=256)  # 名前
+    account_id = models.EmailField(max_length=255, unique=True, validators=[validate_account_id])  # @levels.co.jp判断つき
+    password = models.CharField(max_length=255)  # パスワード
+    name = models.CharField(max_length=255)  # 名前
     age = models.PositiveSmallIntegerField()  # 年齢を示すフィールド
     GENDER_CHOICES = [
         ('M', 'Male'),
@@ -24,7 +24,7 @@ class user_master(models.Model):
     phone_number = models.CharField(max_length=11)  # 電話番号を示すフィールド
     joined = models.DateField()  # 入社日
     department_id = models.PositiveIntegerField()  # 部門番号
-    department = models.CharField(max_length=256)  # 部門名称
+    department = models.CharField(max_length=255)  # 部門名称
 
     def save(self, *args, **kwargs):
         if not self.user_id:

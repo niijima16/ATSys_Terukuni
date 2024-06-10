@@ -30,6 +30,6 @@ urlpatterns = [
     path('homePage/', views.homePage),
 
     # ②トップページ
-    path('topPage/', views.topPage),
+    path('homePage/', views.topPage),
 
 ]

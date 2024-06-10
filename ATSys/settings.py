@@ -80,14 +80,14 @@ WSGI_APPLICATION = 'ATSys.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-DATABASE = {
-    'default':{
+DATABASES = {
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ATSys',
         'USER': 'root',
         'PASSWORD': 'Miku39suki',
         'HOST': 'localhost',
-        'PORT': 3306,
+        'PORT': '3306',  # MySQLのデフォルトポート番号
     }
 }
 
