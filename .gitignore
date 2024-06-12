@@ -163,3 +163,5 @@ docker-compose.prod.yml
 *.local
 *.lock
 *.json
+*.iml
+misc.xml
