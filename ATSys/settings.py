@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'ATSys.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django-db',
-        'USER': 'django',
-        'PASSWORD': 'django',
-        'HOST': 'db',
-        'PORT': '3306',  # MySQLのデフォルトポート番号
+        'NAME': os.getenv('DATABASE_NAME', 'django-db'),
+        'USER': os.getenv('DATABASE_USER', 'django'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'django'),
+        'HOST': os.getenv('DATABASE_HOST', 'db'),
+        'PORT': os.getenv('DATABASE_PORT', '3306'),
     }
 }
 
