@@ -10,6 +10,7 @@ echo "MySQL database is ready!"
 # マイグレーションを実行
 python manage.py makemigrations --no-input
 python manage.py migrate --no-input
+python manage.py create_db_users
 
 # Djangoサーバーを起動
 python manage.py runserver 0.0.0.0:8000
