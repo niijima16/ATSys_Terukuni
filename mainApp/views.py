@@ -1,7 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect
 
 # Create your views here.
-def homePage(request):
+def homePage(request):  # 変える予定
     if request.method == "GET":
         return render(request,"homePage.html")
 
