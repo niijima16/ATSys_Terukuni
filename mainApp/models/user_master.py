@@ -1,15 +1,19 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from .Company import Company
+'''
+外部キー引用リスト
+1.Company
+2.
+3.
+'''
 
-
-# Create your models here.
+# Custom validator for account_id (assuming it checks for the @levels.co.jp domain)
 def validate_account_id(value):
     if not value.endswith('@levels.co.jp'):
-        raise ValidationError('アカウントIDは@levels.co.jpで終わる必要があります。')
+        raise ValidationError('Email must be with the @levels.co.jp domain')
 
-
-class user_master(models.Model):
+class UserMaster(models.Model):
     user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False)  # 一意､プライマリーキー
     account_id = models.EmailField(max_length=255, unique=True, validators=[validate_account_id])  # @levels.co.jp判断つき
     password = models.CharField(max_length=255)  # パスワード
@@ -23,12 +27,12 @@ class user_master(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)  # 性別略
     phone_number = models.CharField(max_length=11)  # 電話番号を示すフィールド
     joined = models.DateField()  # 入社日
-    department_id = models.PositiveIntegerField()  # 部門番号
-    department = models.CharField(max_length=255)  # 部門名称
+    department = models.ForeignKey(Company, on_delete=models.CASCADE, db_column='department_id')  # 部門番号（外部キー）
+    department_name = models.CharField(max_length=255)  # 部門名称
 
     def save(self, *args, **kwargs):
         if not self.user_id:
-            last_user = user_master.objects.all().order_by('-user_id').first()
+            last_user = UserMaster.objects.all().order_by('-user_id').first()
             if last_user:
                 self.user_id = last_user.user_id + 1
             else:
