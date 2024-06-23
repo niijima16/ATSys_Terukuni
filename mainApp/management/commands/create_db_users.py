@@ -6,17 +6,16 @@ class Command(BaseCommand):
     help = 'Create user groups and users in MySQL and grant permissions'
 
     def handle(self, *args, **kwargs):
-        # Define user groups and users
+        # Define the user group and user
         user_groups = [
-            {'group': 'group1', 'user': 'user1', 'password': 'password1'},
-            {'group': 'group2', 'user': 'user2', 'password': 'password2'},
+            {'group': 'DEV_G', 'user': 'dev01', 'password': 'your_password'},
         ]
 
         # SQL statements
         create_user_sql = "CREATE USER IF NOT EXISTS '{user}'@'%' IDENTIFIED BY '{password}';"
         create_group_sql = "CREATE ROLE IF NOT EXISTS '{group}';"
         grant_role_sql = "GRANT '{group}' TO '{user}'@'%';"
-        grant_permissions_sql = "GRANT SELECT, INSERT, UPDATE, DELETE ON your_database_name.* TO '{group}';"
+        grant_permissions_sql = "GRANT SELECT, INSERT, UPDATE, DELETE ON `django-db`.* TO '{group}';"
 
         with connection.cursor() as cursor:
             for entry in user_groups:
