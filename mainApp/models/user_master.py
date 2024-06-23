@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from .Company import Company
+from .company import COMPANY
 '''
 外部キー引用リスト
 1.Company
@@ -27,7 +27,7 @@ class UserMaster(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)  # 性別略
     phone_number = models.CharField(max_length=11)  # 電話番号を示すフィールド
     joined = models.DateField()  # 入社日
-    department = models.ForeignKey(Company, on_delete=models.CASCADE, db_column='department_id')  # 部門番号（外部キー）
+    department = models.ForeignKey(COMPANY, on_delete=models.CASCADE, db_column='department_id')  # 部門番号（外部キー）
     department_name = models.CharField(max_length=255)  # 部門名称
 
     def save(self, *args, **kwargs):
