@@ -13,7 +13,7 @@ def validate_account_id(value):
     if not value.endswith('@levels.co.jp'):
         raise ValidationError('Email must be with the @levels.co.jp domain')
 
-class UserMaster(models.Model):
+class User_Master(models.Model):
     user_id = models.PositiveIntegerField(primary_key=True, unique=True, editable=False)  # 一意､プライマリーキー
     account_id = models.EmailField(max_length=255, unique=True, validators=[validate_account_id])  # @levels.co.jp判断つき
     password = models.CharField(max_length=255)  # パスワード

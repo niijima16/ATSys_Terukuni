@@ -1,5 +1,5 @@
 from django.db import models
-from .timesheet import Timesheet
+from .time_sheet import Timesheet
 from .user_master import UserMaster
 
 class AttendanceEvent(models.Model):
