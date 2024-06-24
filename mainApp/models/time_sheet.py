@@ -1,9 +1,9 @@
 from django.db import models
-from .user_master import UserMaster
+from .user_master import User_Master
 
 class time_sheet(models.Model):
     timeSheet_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(UserMaster, on_delete=models.CASCADE)
+    user = models.ForeignKey(User_Master, on_delete=models.CASCADE)
     start = models.DateField()
     end = models.DateField()
     day_off = models.DateField()

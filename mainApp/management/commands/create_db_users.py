@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connection, DatabaseError
 
 
 class Command(BaseCommand):
@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # Define the user group and user
         user_groups = [
-            {'group': 'DEV_G', 'user': 'dev01', 'password': 'your_password'},
+            {'group': 'DEV_G', 'user': 'dev01', 'password': 'dev01'},
         ]
 
         # SQL statements
@@ -23,13 +23,16 @@ class Command(BaseCommand):
                 user = entry['user']
                 password = entry['password']
 
-                # Create group
-                cursor.execute(create_group_sql.format(group=group))
-                # Create user
-                cursor.execute(create_user_sql.format(user=user, password=password))
-                # Assign user to group
-                cursor.execute(grant_role_sql.format(group=group, user=user))
-                # Grant permissions to group
-                cursor.execute(grant_permissions_sql.format(group=group))
+                try:
+                    # Create group
+                    cursor.execute(create_group_sql.format(group=group))
+                    # Create user
+                    cursor.execute(create_user_sql.format(user=user, password=password))
+                    # Assign user to group
+                    cursor.execute(grant_role_sql.format(group=group, user=user))
+                    # Grant permissions to group
+                    cursor.execute(grant_permissions_sql.format(group=group))
+                except DatabaseError as e:
+                    self.stdout.write(self.style.ERROR(f"Error occurred: {e}"))
 
         self.stdout.write(self.style.SUCCESS('Successfully created user groups, users, and granted permissions'))

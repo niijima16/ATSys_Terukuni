@@ -80,6 +80,16 @@ WSGI_APPLICATION = 'ATSys.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+# プロジェクトのルートディレクトリを取得
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 仮想環境の名前を基に.envファイルのパスを設定
+ENV_DIR = os.path.join(BASE_DIR, '.py3120')
+
+# .envファイルを読み込む
+load_dotenv(os.path.join(ENV_DIR, '.env'))
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',

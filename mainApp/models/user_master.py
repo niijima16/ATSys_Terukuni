@@ -32,7 +32,7 @@ class User_Master(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.user_id:
-            last_user = UserMaster.objects.all().order_by('-user_id').first()
+            last_user = User_Master.objects.all().order_by('-user_id').first()
             if last_user:
                 self.user_id = last_user.user_id + 1
             else:
