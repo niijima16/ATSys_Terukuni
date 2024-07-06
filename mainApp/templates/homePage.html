@@ -7,11 +7,15 @@
 <body>
 <h1>てるくに勤怠システム</h1>
 <h2>ログインしてください</h2>
-<div id="message"></div>
+<div id="message">
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+</div>
 <div>
-    <form id="loginForm" method="post" action="/homePage/">
+    <form id="loginForm" method="post">
         {% csrf_token %}
-        <input type="text" id="user" name="user" placeholder="アカウント">
+        <input type="email" id="user" name="user" placeholder="アカウント">
         <input type="password" id="password" name="password" placeholder="パスワード">
         <input type="submit" value="ログイン" onclick="checkEmail(event)">
     </form>
@@ -27,7 +31,6 @@ function checkEmail(event) {
     // アカウントが "@levels.co.jp" で終わっているかどうかを確認
     if (user.endsWith("@levels.co.jp")) {
         // バックエンドに情報を送信するなどの処理を行う
-        document.getElementById("message").innerHTML = "バック側に情報を送信します...";
         document.getElementById("loginForm").submit(); // フォームを送信
     } else {
         // 有効なアカウントを入力するようにメッセージを表示

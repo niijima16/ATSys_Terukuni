@@ -1,11 +1,10 @@
-# forms.py
 from django import forms
 from django.forms import inlineformset_factory
-from .models import COMPANY, User_Master
+from .models import User_Master, COMPANY
 
-class CompanyForm(forms.ModelForm):
+class UserMasterForm(forms.ModelForm):
     class Meta:
-        model = COMPANY
-        fields = ['name', 'address', 'phone_number']  # COMPANYモデルのフィールドを定義
+        model = User_Master
+        fields = ['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
 
-UserMasterFormSet = inlineformset_factory(COMPANY, User_Master, fields=['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name'], extra=1)
+UserMasterFormSet = inlineformset_factory(COMPANY, User_Master, form=UserMasterForm, fields=['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position'], extra=1)

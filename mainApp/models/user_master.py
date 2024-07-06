@@ -29,6 +29,8 @@ class User_Master(models.Model):
     joined = models.DateField()  # 入社日
     department = models.ForeignKey(COMPANY, on_delete=models.CASCADE, db_column='department_id')  # 部門番号（外部キー）
     department_name = models.CharField(max_length=255)  # 部門名称
+    position = models.CharField(max_length=255, default='正社員')
+
 
     def save(self, *args, **kwargs):
         if not self.user_id:
