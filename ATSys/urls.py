@@ -25,6 +25,6 @@ https://docs.google.com/document/d/1GoGZs8twXaYwMq4uEY6W7ryWamZTpWFlzd0VrIR81fs/
 """
 urlpatterns = [
     path('TerukuniAdmin/', admin.site.urls),
-    path('homePage/', views.homePage),
+    path('homePage/', views.homePage, name='homePage'),
     path('topPage/', views.topPage, name='topPage'),
 ]
