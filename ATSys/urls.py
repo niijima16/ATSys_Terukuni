@@ -24,12 +24,7 @@ from mainApp import views
 https://docs.google.com/document/d/1GoGZs8twXaYwMq4uEY6W7ryWamZTpWFlzd0VrIR81fs/edit
 """
 urlpatterns = [
-
     path('TerukuniAdmin/', admin.site.urls),
-    # ①ログインページURL
-    path('homePage/', views.homePage),
-
-    # ②トップページ
-    path('topPage/', views.topPage),
-
+    path('homePage/', views.homePage, name='homePage'),
+    path('topPage/', views.topPage, name='topPage'),
 ]
