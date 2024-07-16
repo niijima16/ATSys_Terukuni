@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
 from .models import User_Master
-from .forms import LoginForm
+from .forms import LoginForm, RegisterForm
 
 def homePage(request):
     error_message = None
-
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -22,6 +21,16 @@ def homePage(request):
         form = LoginForm()
 
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
+
+def registerPage(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('homePage')
+    else:
+        form = RegisterForm()
+    return render(request, 'Registration.html', {'form': form})
 
 def topPage(request):
     return render(request, 'topPage.html')
