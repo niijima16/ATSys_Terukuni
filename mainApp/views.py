@@ -12,6 +12,7 @@ def homePage(request):
             try:
                 user = User_Master.objects.get(account_id=account)
                 if password == user.password:
+                    request.session['user_name'] = user.name  # セッションにユーザー名を保存
                     return redirect('topPage')
                 else:
                     error_message = 'パスワードが正しくありません。'
@@ -22,6 +23,10 @@ def homePage(request):
 
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
+def topPage(request):
+    user_name = request.session.get('user_name', 'ゲスト')  # セッションからユーザー名を取得
+    return render(request, 'topPage.html', {'user_name': user_name})
+
 def registerPage(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -31,6 +36,3 @@ def registerPage(request):
     else:
         form = RegisterForm()
     return render(request, 'Registration.html', {'form': form})
-
-def topPage(request):
-    return render(request, 'topPage.html')
