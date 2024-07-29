@@ -26,7 +26,6 @@ class User_Master(models.Model):
         ('社長', '社長'),
     ]
     position = models.CharField(max_length=10, choices=POSITION_CHOICES, default='社員')
-    company = models.ForeignKey('COMPANY', on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         if not self.user_id:
