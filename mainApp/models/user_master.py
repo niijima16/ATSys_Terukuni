@@ -15,7 +15,7 @@ class User_Master(models.Model):
     phone_number = models.CharField(max_length=11)
     joined = models.DateField()
     department_name = models.CharField(max_length=255)
-    position = models.CharField(max_length=255, default='正社員')
+    position = models.CharField(max_length=255, default='正社員') #チョイスにするがいい
     company = models.ForeignKey('COMPANY', on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
