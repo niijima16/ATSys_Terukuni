@@ -1,12 +1,28 @@
 from django.db import models
-from .user_master import User_Master
+from datetime import timedelta
 
-class time_sheet(models.Model):
-    timeSheet_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User_Master, on_delete=models.CASCADE)
-    start = models.DateField()
-    end = models.DateField()
-    day_off = models.DateField()
+class TimeSheet(models.Model):
+    user = models.ForeignKey('User_Master', on_delete=models.CASCADE)  # User_Masterを使用
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    break_time = models.DurationField(default=timedelta(minutes=0))
+    overtime = models.DurationField(default=timedelta(minutes=0))
+    leave_type = models.ForeignKey('LeaveType', on_delete=models.SET_NULL, null=True, blank=True)
+    comments = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = 'タイムシート'
+        verbose_name_plural = 'タイムシート'
+        unique_together = ('user', 'date')  # 同じ日に同じユーザーが複数のタイムシートを持たないようにする
 
     def __str__(self):
-        return f"time_sheet {self.timeSheet_id} for {self.user.name}"
+        return f"{self.user.name} - {self.date}"  # User_Masterモデルのnameフィールドを使用
+
+    @property
+    def total_work_time(self):
+        # 実働時間を計算
+        work_duration = (self.end_time - self.start_time) - self.break_time
+        if work_duration < timedelta(0):
+            work_duration += timedelta(days=1)
+        return work_duration
