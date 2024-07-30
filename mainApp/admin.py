@@ -22,13 +22,13 @@ class TimeSheetAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'date')
     list_filter = ('leave_type',)
     
-@admin.register(Shift)  # シフトモデルの管理
+@admin.register(Shift)  # シフトテーブルの管理
 class ShiftAdmin(admin.ModelAdmin):
     list_display = ('user', 'date', 'start_time', 'end_time', 'break_time', 'shift_type')
     search_fields = ('user__name', 'date')
     list_filter = ('shift_type',)
     
-@admin.register(LeaveRequest)
+@admin.register(LeaveRequest) # 休暇申請テーブルの管理
 class LeaveRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'leave_type', 'start_date', 'end_date', 'approved')
     search_fields = ('user__name', 'leave_type__name', 'start_date', 'end_date')
