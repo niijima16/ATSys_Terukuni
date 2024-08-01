@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import User_Master
+from django.utils import timezone
+from .models import User_Master, TimeSheet
 from .forms import LoginForm, RegisterForm
 
 def homePage(request):
@@ -24,9 +25,24 @@ def homePage(request):
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
 def topPage(request):
-    if request.method == 'POST':
-        pass
     user_name = request.session.get('user_name', 'ゲスト')  # セッションからユーザー名を取得
+    user = User_Master.objects.get(name=user_name)
+    if request.method == 'POST' :
+        if 'clock_in' in request.POST: # 出金処理
+            TimeSheet.objects.create(
+                user = user,
+                data = timezone.now().date(),
+                start_time = timezone.now().time()
+            )
+        elif 'clock_out' in request.POST: # 退勤処理
+            try:
+                timesheet = TimeSheet.objects.filter(user=user, date=timezone.now().date()).latest('start_time')
+                timesheet.end_time = timezone.now().time()
+                timesheet.save()
+            except TimeSheet.DoesNotExist:
+                pass
+        return redirect('topPage')
+    
     return render(request, 'topPage.html', {'user_name': user_name})
 
 def registerPage(request):
