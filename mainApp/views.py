@@ -7,7 +7,7 @@ def homePage(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            account = form.cleaned_data['user']
+            account = form.cleaned_data['user_id']
             password = form.cleaned_data['password']
             try:
                 user = User_Master.objects.get(account_id=account)
