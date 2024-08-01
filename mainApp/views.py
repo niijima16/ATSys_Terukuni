@@ -24,6 +24,8 @@ def homePage(request):
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
 def topPage(request):
+    if request.method == 'POST':
+        pass
     user_name = request.session.get('user_name', 'ゲスト')  # セッションからユーザー名を取得
     return render(request, 'topPage.html', {'user_name': user_name})
 
