@@ -14,3 +14,7 @@ class RegisterForm(forms.ModelForm):
 class LoginForm(forms.Form):
     user_id = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput())
+    
+# excelでシフトを読み込む
+class ShiftUploadForm(forms.Form):
+    file = forms.FileField(label='Upload Excel file')
