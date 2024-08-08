@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import User_Master, Shift, TimeSheet
 from .forms import ShiftUploadForm, LoginForm, CSVUploadForm, RegisterForm
 from django.contrib import messages
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def homePage(request):
     error_message = None
@@ -127,34 +127,55 @@ def registerPage(request):
 def shift_success(request):
     return render(request, 'shift_success.html') 
 
+def parse_duration(duration_str):
+    try:
+        # Try splitting the time string into hours, minutes, and seconds
+        time_parts = duration_str.split(':')
+        if len(time_parts) != 3:
+            raise ValueError(f"Incorrect format for break_time: {duration_str}")
+        hours, minutes, seconds = map(int, time_parts)
+        return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+    except ValueError as e:
+        raise ValueError(f"Error parsing duration '{duration_str}': {e}")
+
 def upload_shifts(request):
-    if request.method == 'POST':
-        form = CSVUploadForm(request.POST, request.FILES)
+    if request.method == "POST":
+        form = ShiftUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            csv_file = request.FILES['csv_file']
-            if not csv_file.name.endswith('.csv'):
-                messages.error(request, 'CSVファイルをアップロードしてください。')
-                return redirect('upload_shifts')
+            csv_file = request.FILES['file']
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
             try:
-                decoded_file = csv_file.read().decode('utf-8').splitlines()
-                reader = csv.reader(decoded_file)
                 for row in reader:
-                    if len(row) != 5:  # 必要なカラム数
-                        continue
-                    user_id, date, start_time, end_time, break_time = row
-                    # ユーザーIDでユーザーを取得
-                    user = User_Master.objects.get(pk=user_id)
-                    Shift.objects.create(
-                        user=user,
-                        date=date,
-                        start_time=start_time,
-                        end_time=end_time,
-                        break_time=break_time
-                    )
-                messages.success(request, 'シフトが正常にアップロードされました。')
+                    try:
+                        # ユーザー名からUser_Masterを取得
+                        user = User_Master.objects.get(name=row['name'])
+
+                        # 日付を文字列からdatetime.dateオブジェクトに変換
+                        date_obj = datetime.strptime(row['date'], '%Y-%m-%d').date()
+
+                        # 空欄の場合は「休み」として処理
+                        start_time = datetime.strptime(row['start_time'], '%H:%M:%S').time() if row['start_time'] else None
+                        end_time = datetime.strptime(row['end_time'], '%H:%M:%S').time() if row['end_time'] else None
+                        break_time = parse_duration(row['break_time']) if row['break_time'] else timedelta(hours=0)  # デフォルトを0時間に設定
+
+                        # Shiftオブジェクトを作成し保存
+                        shift = Shift(
+                            user=user,
+                            date=date_obj,
+                            start_time=start_time,
+                            end_time=end_time,
+                            break_time=break_time,
+                            shift_type=row.get('shift_type', ''),
+                            # 「休み」を示すフィールドを設定する場合
+                            is_weekend=True if not start_time and not end_time else False
+                        )
+                        shift.save()
+                    except Exception as e:
+                        print(f"Error processing row {row}: {e}")
+                messages.success(request, "Shifts uploaded successfully!")
             except Exception as e:
-                messages.error(request, f'エラーが発生しました: {e}')
-            return redirect('upload_shifts')
+                messages.error(request, f"Error uploading shifts: {e}")
     else:
-        form = CSVUploadForm()
+        form = ShiftUploadForm()
     return render(request, 'upload_shifts.html', {'form': form})
