@@ -26,43 +26,12 @@ class TimeSheetAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'date')
     list_filter = ('leave_type',)
 
-@admin.register(Shift)  # シフトテーブルの管理
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ('user', 'date', 'start_time', 'end_time', 'break_time', 'shift_type')
-    search_fields = ('user__name', 'date')
-    list_filter = ('shift_type',)
-    actions = ['import_shifts']
+    list_display = ('user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
+    list_filter = ('user', 'date', 'is_weekend')
+    search_fields = ('user__name', 'date', 'weekday')
 
-    def import_shifts(self, request, queryset):
-        if request.method == 'POST':
-            form = ShiftUploadForm(request.POST, request.FILES)
-            if form.is_valid():
-                excel_file = request.FILES['file']
-                df = pd.read_excel(excel_file, engine='openpyxl')
-
-                for index, row in df.iterrows():
-                    try:
-                        user = User_Master.objects.get(name=row['name'])
-                        Shift.objects.create(
-                            user=user,
-                            date=row['date'],
-                            start_time=row['start_time'],
-                            end_time=row['end_time'],
-                            break_time=row['break_time'],
-                            shift_type=row['shift_type']
-                        )
-                    except User_Master.DoesNotExist:
-                        self.message_user(request, f"User {row['name']} does not exist.", level='error')
-
-                self.message_user(request, "Shifts imported successfully")
-                return HttpResponseRedirect("..")  # 管理画面にリダイレクト
-
-        else:
-            form = ShiftUploadForm()
-
-        return render(request, 'admin/upload_shifts.html', {'form': form})
-
-    import_shifts.short_description = 'Import shifts from Excel'
+admin.site.register(Shift, ShiftAdmin)
 
 @admin.register(LeaveRequest) # 休暇申請テーブルの管理
 class LeaveRequestAdmin(admin.ModelAdmin):

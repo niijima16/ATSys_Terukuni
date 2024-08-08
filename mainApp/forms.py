@@ -17,4 +17,8 @@ class LoginForm(forms.Form):
     
 # excelでシフトを読み込む
 class ShiftUploadForm(forms.Form):
-    file = forms.FileField(label='Upload Excel file')
+    file = forms.FileField(label='シフトファイルを選択')
+
+# csvでシフトを読み込む
+class CSVUploadForm(forms.Form):
+    csv_file = forms.FileField(label='CSVファイルを選択')

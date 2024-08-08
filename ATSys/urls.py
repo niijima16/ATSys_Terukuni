@@ -29,4 +29,5 @@ urlpatterns = [
     path('register/', views.registerPage, name='registerPage'),
     path('topPage/', views.topPage, name='topPage'),
     path('upload_shifts/', views.upload_shifts, name='upload_shifts'),
+    path('shift_success/', views.shift_success, name='shift_success'),
 ]
