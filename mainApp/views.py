@@ -3,7 +3,7 @@ import csv
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp
-from .forms import LoginForm, CSVUploadForm, RegisterForm
+from .forms import LoginForm, ShiftUploadForm, RegisterForm
 from django.contrib import messages
 from datetime import datetime, timedelta
 
@@ -89,9 +89,9 @@ def parse_duration(duration_str):
 # シフトをアップロード用
 def upload_shifts(request):
     if request.method == "POST":
-        form = CSVUploadForm(request.POST, request.FILES)
+        form = ShiftUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            csv_file = request.FILES['file']
+            csv_file = request.FILES['csv_file']
             decoded_file = csv_file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             try:
@@ -126,5 +126,5 @@ def upload_shifts(request):
             except Exception as e:
                 messages.error(request, f"Error uploading shifts: {e}")
     else:
-        form = CSVUploadForm()
+        form = ShiftUploadForm()
     return render(request, 'upload_shifts.html', {'form': form})

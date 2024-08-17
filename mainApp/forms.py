@@ -15,6 +15,6 @@ class LoginForm(forms.Form):
     user_id = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput())
 
-# csvでシフトを読み込む
-class CSVUploadForm(forms.Form):
+# Shiftデータをアップロードするためのフォーム
+class ShiftUploadForm(forms.Form):
     csv_file = forms.FileField(label='CSVファイルを選択')
