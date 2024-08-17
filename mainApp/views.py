@@ -2,8 +2,8 @@ import pandas as pd
 import csv
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from .models import User_Master, Shift, TimeSheet
-from .forms import ShiftUploadForm, LoginForm, CSVUploadForm, RegisterForm
+from .models import User_Master, Shift, TimeStamp
+from .forms import LoginForm, CSVUploadForm, RegisterForm
 from django.contrib import messages
 from datetime import datetime, timedelta
 
@@ -29,24 +29,36 @@ def homePage(request):
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
 def topPage(request):
-    user_name = request.session.get('user_name', 'ゲスト')  # セッションからユーザー名を取得
-    user = User_Master.objects.get(name=user_name)
-    if request.method == 'POST' :
-        if 'clock_in' in request.POST: # 出勤処理
-            TimeSheet.objects.create(
-                user = user,
-                date = timezone.now().date(),
-                start_time = timezone.now().time()
-            )
-        elif 'clock_out' in request.POST: # 退勤処理
+    user_name = request.session.get('user_name', 'ゲスト')
+    try:
+        user = User_Master.objects.get(name=user_name)
+    except User_Master.DoesNotExist:
+        user = None
+
+    if request.method == 'POST':
+        if 'clock_in' in request.POST:  # 出勤処理
+            today = timezone.now().date()
+            existing_clock_in = TimeStamp.objects.filter(user=user, clock_in_time__date=today).exists()
+            if existing_clock_in:
+                messages.error(request, '本日は既に出勤しております｡')
+            else:
+                TimeStamp.objects.create(
+                    user=user,
+                    clock_in_time=timezone.now()
+                )
+                messages.success(request, '出勤しました。')
+        
+        elif 'clock_out' in request.POST:  # 退勤処理
             try:
-                timesheet = TimeSheet.objects.filter(user=user, date=timezone.now().date()).latest('start_time')
-                timesheet.end_time = timezone.now().time()
-                timesheet.save()
-            except TimeSheet.DoesNotExist:
-                pass
+                time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=timezone.now().date()).latest('clock_in_time')
+                time_stamp.clock_out_time = timezone.now()
+                time_stamp.save()
+                messages.success(request, '退勤しました。')
+            except TimeStamp.DoesNotExist:
+                messages.error(request, '出勤記録が見つかりません。')
+
         return redirect('topPage')
-    
+
     return render(request, 'topPage.html', {'user_name': user_name})
 
 def registerPage(request):
@@ -74,6 +86,7 @@ def parse_duration(duration_str):
     except ValueError as e:
         raise ValueError(f"Error parsing duration '{duration_str}': {e}")
 
+# シフトをアップロード用
 def upload_shifts(request):
     if request.method == "POST":
         form = ShiftUploadForm(request.POST, request.FILES)
