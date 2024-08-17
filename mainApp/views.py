@@ -89,7 +89,7 @@ def parse_duration(duration_str):
 # シフトをアップロード用
 def upload_shifts(request):
     if request.method == "POST":
-        form = ShiftUploadForm(request.POST, request.FILES)
+        form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
             csv_file = request.FILES['file']
             decoded_file = csv_file.read().decode('utf-8').splitlines()
@@ -126,5 +126,5 @@ def upload_shifts(request):
             except Exception as e:
                 messages.error(request, f"Error uploading shifts: {e}")
     else:
-        form = ShiftUploadForm()
+        form = CSVUploadForm()
     return render(request, 'upload_shifts.html', {'form': form})
