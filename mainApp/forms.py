@@ -14,6 +14,13 @@ class RegisterForm(forms.ModelForm):
 class LoginForm(forms.Form):
     user_id = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput())
+<<<<<<< HEAD
+=======
+    
+# # excelでシフトを読み込む
+# class ShiftUploadForm(forms.Form):
+#     file = forms.FileField(label='シフトファイルを選択')
+>>>>>>> cedb43bdacc9c3e28a20b4d417a6f9d9e71c507f
 
 # csvでシフトを読み込む
 class CSVUploadForm(forms.Form):
