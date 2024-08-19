@@ -71,60 +71,50 @@ def registerPage(request):
         form = RegisterForm()
     return render(request, 'Registration.html', {'form': form})
 
-# アップロード判断：成功
-def shift_success(request):
-    return render(request, 'shift_success.html') 
-
-def parse_duration(duration_str):
-    try:
-        # Try splitting the time string into hours, minutes, and seconds
-        time_parts = duration_str.split(':')
-        if len(time_parts) != 3:
-            raise ValueError(f"Incorrect format for break_time: {duration_str}")
-        hours, minutes, seconds = map(int, time_parts)
-        return timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    except ValueError as e:
-        raise ValueError(f"Error parsing duration '{duration_str}': {e}")
-
 # シフトをアップロード用
 def upload_shifts(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form = ShiftUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            csv_file = request.FILES['csv_file']
+            csv_file = form.cleaned_data['csv_file']
             decoded_file = csv_file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
-            try:
-                for row in reader:
-                    try:
-                        # ユーザー名からUser_Masterを取得
-                        user = User_Master.objects.get(name=row['name'])
+            updated_shifts = 0  # 更新されたシフトの数をカウント
 
-                        # 日付を文字列からdatetime.dateオブジェクトに変換
-                        date_obj = datetime.strptime(row['date'], '%Y-%m-%d').date()
+            for row in reader:
+                try:
+                    user = User_Master.objects.get(employee_number=row['employee_number'])
+                    
+                    date = datetime.strptime(row['date'], '%Y-%m-%d').date()
+                    start_time = row['start_time'] if row['start_time'] else None
+                    end_time = row['end_time'] if row['end_time'] else None
+                    
+                    break_time_str = row['break_time'] if row['break_time'] else '0:00:00'
+                    (hours, minutes, seconds) = map(int, break_time_str.split(':'))
+                    break_time = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+                    
+                    # 既存のシフトを確認し、更新または作成
+                    shift, created = Shift.objects.update_or_create(
+                        user=user,
+                        date=date,
+                        defaults={
+                            'start_time': start_time,
+                            'end_time': end_time,
+                            'break_time': break_time,
+                        }
+                    )
+                    if created:
+                        updated_shifts += 1
 
-                        # 空欄の場合は「休み」として処理
-                        start_time = datetime.strptime(row['start_time'], '%H:%M:%S').time() if row['start_time'] else None
-                        end_time = datetime.strptime(row['end_time'], '%H:%M:%S').time() if row['end_time'] else None
-                        break_time = parse_duration(row['break_time']) if row['break_time'] else timedelta(hours=0)  # デフォルトを0時間に設定
+                except User_Master.DoesNotExist:
+                    # ユーザーが存在しない場合のエラーハンドリング
+                    continue
 
-                        # Shiftオブジェクトを作成し保存
-                        shift = Shift(
-                            user=user,
-                            date=date_obj,
-                            start_time=start_time,
-                            end_time=end_time,
-                            break_time=break_time,
-                            shift_type=row.get('shift_type', ''),
-                            # 「休み」を示すフィールドを設定する場合
-                            is_weekend=True if not start_time and not end_time else False
-                        )
-                        shift.save()
-                    except Exception as e:
-                        print(f"Error processing row {row}: {e}")
-                messages.success(request, "Shifts uploaded successfully!")
-            except Exception as e:
-                messages.error(request, f"Error uploading shifts: {e}")
+            # アップロード成功のメッセージを追加
+            messages.success(request, f'{updated_shifts} 件のシフトが正常にアップロードされました。')
+
+            return redirect('upload_shifts')  # アップロードページにリダイレクト
+
     else:
         form = ShiftUploadForm()
     return render(request, 'upload_shifts.html', {'form': form})

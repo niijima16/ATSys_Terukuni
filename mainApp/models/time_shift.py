@@ -6,6 +6,7 @@ from datetime import timedelta
 
 class Shift(models.Model):
     user = models.ForeignKey(User_Master, on_delete=models.CASCADE)
+    employee_number = models.PositiveIntegerField(null=True, blank=True)  # employee_numberを追加
     date = models.DateField(default=timezone.now)
     start_time = models.TimeField(null=True, blank=True)  # 空欄を許可
     end_time = models.TimeField(null=True, blank=True)  # 空欄を許可
@@ -27,6 +28,11 @@ class Shift(models.Model):
         self.is_weekend = weekday_index >= 5  # 土曜日（5）または日曜日（6）の場合はTrue
         # 空欄の開始時間と終了時間があれば、休みの日としてマーク
         self.is_off_day = self.start_time is None and self.end_time is None
+        
+        # userのemployee_numberを設定
+        if self.user:
+            self.employee_number = self.user.employee_number
+        
         super().save(*args, **kwargs)
 
     def __str__(self):

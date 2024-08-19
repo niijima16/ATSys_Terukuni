@@ -5,36 +5,33 @@ from mainApp.models.time_stamp import TimeStamp
 from mainApp.models.time_shift import Shift
 from mainApp.models.leave_request import LeaveRequest
 
-@admin.register(User_Master)  # ユーザー情報テーブル
+@admin.register(User_Master)
 class UserMasterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'account_id', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position')
-    search_fields = ('name', 'account_id', 'phone_number')
+    list_display = ('employee_number', 'name', 'account_id', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position')
+    search_fields = ('employee_number', 'name', 'account_id', 'phone_number')
     list_filter = ('gender', 'position')
 
-@admin.register(LeaveType)  # 休暇種類テーブル
+@admin.register(LeaveType)
 class LeaveTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
     search_fields = ('name',)
 
-@admin.register(TimeStamp)  # 打刻情報テーブル
+@admin.register(TimeStamp)
 class TimeSheetAdmin(admin.ModelAdmin):
-    list_display = ('user', 'clock_in_time', 'clock_out_time')
+    list_display = ('user', 'clock_in_time', 'clock_out_time', 'worked_hours')
     list_filter = ('user',)
 
     def worked_hours(self, obj):
         return obj.calculate_worked_hours()
     worked_hours.short_description = 'Worked Hours'
 
-    # worked_hoursを表示に追加する場合
-    list_display += ('worked_hours',)
-
-@admin.register(Shift)  # シフト情報テーブル
+@admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ('user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
+    list_display = ('employee_number', 'user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
     list_filter = ('user', 'date', 'is_weekend')
     search_fields = ('user__name', 'date', 'weekday')
 
-@admin.register(LeaveRequest)  # 休暇申請テーブル
+@admin.register(LeaveRequest)
 class LeaveRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'leave_type', 'start_date', 'end_date', 'approved')
     search_fields = ('user__name', 'leave_type__name', 'start_date', 'end_date')
