@@ -14,3 +14,7 @@ class RegisterForm(forms.ModelForm):
 class LoginForm(forms.Form):
     user_id = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput())
+
+# Shiftデータをアップロードするためのフォーム
+class ShiftUploadForm(forms.Form):
+    csv_file = forms.FileField(label='CSVファイルを選択')
