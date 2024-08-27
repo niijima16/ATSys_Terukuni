@@ -1,3 +1,5 @@
+# user_master.py
+
 from django.db import models
 
 class User_Master(models.Model):

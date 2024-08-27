@@ -37,6 +37,7 @@
     {% endif %}
 
     <div>
+      <p>今日の勤務時間: {{ worked_hours }} 時間</p>
       <form method="post" action="">
         {% csrf_token %}
         <input type="submit" name="clock_in" value="出勤" />
@@ -49,5 +50,6 @@
         >シフトアップロードページ</a
       >
     </div>
+    <a href="{% url 'logout' %}">ログアウト</a>
   </body>
 </html>

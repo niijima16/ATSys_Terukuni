@@ -1,3 +1,5 @@
+# views.py
+
 import pandas as pd
 import csv
 from django.shortcuts import render, redirect
@@ -17,7 +19,7 @@ def homePage(request):
             try:
                 user = User_Master.objects.get(account_id=account)
                 if password == user.password:
-                    request.session['user_name'] = user.name  # セッションにユーザー名を保存
+                    request.session['employee_number'] = user.employee_number  # セッションにemployee_numberを保存
                     return redirect('topPage')
                 else:
                     error_message = 'パスワードが正しくありません。'
@@ -28,12 +30,22 @@ def homePage(request):
 
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
+    return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
+
 def topPage(request):
-    user_name = request.session.get('user_name', 'ゲスト')
-    try:
-        user = User_Master.objects.get(name=user_name)
-    except User_Master.DoesNotExist:
-        user = None
+    employee_number = request.session.get('employee_number')
+    user = User_Master.objects.filter(employee_number=employee_number).first()  # employee_numberでフィルタリング
+
+    worked_hours = 0  # 初期値を設定
+
+    if user:
+        try:
+            # 最新の出勤記録を取得
+            time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=timezone.now().date()).latest('clock_in_time')
+            # 勤務時間を計算
+            worked_hours = time_stamp.calculate_worked_hours()
+        except TimeStamp.DoesNotExist:
+            worked_hours = 0
 
     if request.method == 'POST':
         if 'clock_in' in request.POST:  # 出勤処理
@@ -53,13 +65,15 @@ def topPage(request):
                 time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=timezone.now().date()).latest('clock_in_time')
                 time_stamp.clock_out_time = timezone.now()
                 time_stamp.save()
+                # 退勤後、勤務時間を再計算
+                worked_hours = time_stamp.calculate_worked_hours()
                 messages.success(request, '退勤しました。')
             except TimeStamp.DoesNotExist:
                 messages.error(request, '出勤記録が見つかりません。')
 
         return redirect('topPage')
 
-    return render(request, 'topPage.html', {'user_name': user_name})
+    return render(request, 'topPage.html', {'user_name': user.name, 'worked_hours': worked_hours})
 
 def registerPage(request):
     if request.method == 'POST':
@@ -118,3 +132,8 @@ def upload_shifts(request):
     else:
         form = ShiftUploadForm()
     return render(request, 'upload_shifts.html', {'form': form})
+
+# ログアウト
+def logout(request):
+    request.session.flush()  # セッションをクリア
+    return redirect('homePage')  # ログインページにリダイレクト
