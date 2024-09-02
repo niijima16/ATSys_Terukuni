@@ -100,9 +100,26 @@
       {% endif %}
 
       <div>
-        <p>今日の勤務時間: {{ worked_hours }} 時間</p>
-        <p>残業時間: {{ overtime_hours }} 時間</p>
-        <p>早退時間: {{ early_leave_hours }} 時間</p>
+        <form method="get" action="" class="form-group">
+          <label for="date">表示する日付を選択してください:</label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value="{{ selected_date }}"
+            max="{{ today_date }}"
+          />
+          <input type="submit" value="表示" />
+        </form>
+
+        <p>今日の勤務時間: {{ today_worked_hours }} 時間</p>
+        <p>残業時間: {{ today_overtime_hours }} 時間</p>
+        <p>早退時間: {{ today_early_leave_hours }} 時間</p>
+
+        <p>選択した日付の勤務時間: {{ selected_day_worked_hours }} 時間</p>
+        <p>残業時間: {{ selected_day_overtime_hours }} 時間</p>
+        <p>早退時間: {{ selected_day_early_leave_hours }} 時間</p>
+
         <form method="post" action="" class="form-group">
           {% csrf_token %}
           <input type="submit" name="clock_in" value="出勤" />
