@@ -1,5 +1,3 @@
-# views.py
-
 import pandas as pd
 import csv
 from django.shortcuts import render, redirect
@@ -9,6 +7,7 @@ from .forms import LoginForm, ShiftUploadForm, RegisterForm
 from django.contrib import messages
 from datetime import datetime, timedelta
 
+# ホームページ用
 def homePage(request):
     error_message = None
     if request.method == 'POST':
@@ -30,29 +29,32 @@ def homePage(request):
 
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
-    return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
-
+# トップページ用
 def topPage(request):
     employee_number = request.session.get('employee_number')
-    user = User_Master.objects.filter(employee_number=employee_number).first()  # employee_numberでフィルタリング
+    user = User_Master.objects.filter(employee_number=employee_number).first()
 
-    worked_hours = 0  # 初期値を設定
+    worked_hours = 0
+    overtime_hours = 0
+    early_leave_hours = 0
 
     if user:
         try:
-            # 最新の出勤記録を取得
             time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=timezone.now().date()).latest('clock_in_time')
-            # 勤務時間を計算
             worked_hours = time_stamp.calculate_worked_hours()
+            overtime_hours = time_stamp.calculate_overtime()
+            early_leave_hours = time_stamp.calculate_early_leave()
         except TimeStamp.DoesNotExist:
             worked_hours = 0
+            overtime_hours = 0
+            early_leave_hours = 0
 
     if request.method == 'POST':
-        if 'clock_in' in request.POST:  # 出勤処理
+        if 'clock_in' in request.POST:
             today = timezone.now().date()
             existing_clock_in = TimeStamp.objects.filter(user=user, clock_in_time__date=today).exists()
             if existing_clock_in:
-                messages.error(request, '本日は既に出勤しております｡')
+                messages.error(request, '本日は既に出勤しております。')
             else:
                 TimeStamp.objects.create(
                     user=user,
@@ -60,20 +62,26 @@ def topPage(request):
                 )
                 messages.success(request, '出勤しました。')
         
-        elif 'clock_out' in request.POST:  # 退勤処理
+        elif 'clock_out' in request.POST:
             try:
                 time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=timezone.now().date()).latest('clock_in_time')
                 time_stamp.clock_out_time = timezone.now()
                 time_stamp.save()
-                # 退勤後、勤務時間を再計算
                 worked_hours = time_stamp.calculate_worked_hours()
+                overtime_hours = time_stamp.calculate_overtime()
+                early_leave_hours = time_stamp.calculate_early_leave()
                 messages.success(request, '退勤しました。')
             except TimeStamp.DoesNotExist:
                 messages.error(request, '出勤記録が見つかりません。')
 
         return redirect('topPage')
 
-    return render(request, 'topPage.html', {'user_name': user.name, 'worked_hours': worked_hours})
+    return render(request, 'topPage.html', {
+        'user_name': user.name, 
+        'worked_hours': worked_hours,
+        'overtime_hours': overtime_hours,
+        'early_leave_hours': early_leave_hours
+    })
 
 def registerPage(request):
     if request.method == 'POST':

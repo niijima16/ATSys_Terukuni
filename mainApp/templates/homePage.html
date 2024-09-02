@@ -1,21 +1,74 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログインページ</title>
-</head>
-<body>
-<h1>ログインページ</h1>
-<div id="message">
-    {% if error_message %}
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+      }
+      input[type="submit"] {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      input[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+      #message p {
+        color: #721c24;
+        background-color: #f8d7da;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      a {
+        display: inline-block;
+        margin-top: 20px;
+        text-align: center;
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>ログインページ</h1>
+      <div id="message">
+        {% if error_message %}
         <p>{{ error_message }}</p>
-    {% endif %}
-</div>
-<form method="post" action="">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="ログイン">
-</form>
-<a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
-</body>
+        {% endif %}
+      </div>
+      <form method="post" action="">
+        {% csrf_token %} {{ form.as_p }}
+        <input type="submit" value="ログイン" />
+      </form>
+      <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
+    </div>
+  </body>
 </html>

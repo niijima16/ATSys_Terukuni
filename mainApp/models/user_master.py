@@ -19,7 +19,7 @@ class User_Master(models.Model):
     department_name = models.CharField(max_length=255)
     
     POSITION_CHOICES = [
-        ('社員', '平社員'),
+        ('社員', 'ß社員'),
         ('リーダー', 'リーダー'),
         ('マネージャー', 'マネージャー'),
         ('課長', '課長'),
@@ -37,23 +37,12 @@ class User_Master(models.Model):
             self.user_id = last_user.user_id + 1 if last_user else 1
 
         if not self.employee_number:
-            # positionに基づいて社員番号を設定
-            initial_numbers = {
-                '社長': 10001,
-                '取締役': 20001,
-                '部長': 30001,
-                '課長': 40001,
-                'マネージャー': 50001,
-                'リーダー': 60001,
-                '社員': 70001,
-            }
-            self.employee_number = initial_numbers.get(self.position, 99999)
-            
-            # 同じポジションの他のユーザーがすでに存在する場合、番号をインクリメント
-            existing_users = User_Master.objects.filter(position=self.position).order_by('employee_number')
-            if existing_users.exists():
-                last_employee_number = existing_users.last().employee_number
-                self.employee_number = last_employee_number + 1
+            # 最新の社員番号を取得し、1を追加
+            last_employee = User_Master.objects.order_by('employee_number').last()
+            if last_employee:
+                self.employee_number = last_employee.employee_number + 1
+            else:
+                self.employee_number = 10000000
 
         super().save(*args, **kwargs)
 

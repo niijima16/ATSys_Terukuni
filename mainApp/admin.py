@@ -27,9 +27,13 @@ class TimeSheetAdmin(admin.ModelAdmin):
 
 @admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ('employee_number', 'user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
+    list_display = ('get_employee_number', 'user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
     list_filter = ('user', 'date', 'is_weekend')
     search_fields = ('user__name', 'date', 'weekday')
+
+    def get_employee_number(self, obj):
+        return obj.user.employee_number
+    get_employee_number.short_description = 'Employee Number'
 
 @admin.register(LeaveRequest)
 class LeaveRequestAdmin(admin.ModelAdmin):

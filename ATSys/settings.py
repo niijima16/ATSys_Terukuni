@@ -139,10 +139,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# セッションがブラウザを閉じた後に自動的に削除されるように設定
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
-# セッションの有効期限を設定 (1)
-SESSION_COOKIE_AGE = 60

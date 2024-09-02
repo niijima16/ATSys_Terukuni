@@ -1,11 +1,8 @@
-# time_stamp.py
-
 from django.db import models
-from .user_master import User_Master
-from .time_shift import Shift
 from django.utils import timezone
-from decimal import ROUND_DOWN
-from datetime import datetime
+from datetime import datetime, timedelta
+from mainApp.models.user_master import User_Master
+from mainApp.models.time_shift import Shift
 
 class TimeStamp(models.Model):
     user = models.ForeignKey(User_Master, on_delete=models.CASCADE)
@@ -15,23 +12,50 @@ class TimeStamp(models.Model):
 
     def calculate_worked_hours(self):
         if self.clock_out_time and self.shift:
-            # シフトの開始時間と終了時間をtimezone-awareのdatetime型に変換
             shift_start_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.start_time))
             shift_end_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.end_time))
 
-            # 実際の出勤時間と退勤時間をシフト内に収める
             clock_in_time = max(self.clock_in_time, shift_start_datetime)
             clock_out_time = min(self.clock_out_time, shift_end_datetime)
 
-            # 勤務時間を計算
             worked_time = clock_out_time - clock_in_time
-            
-            # 休憩時間を差し引く
             worked_time -= self.shift.break_time
 
-            # 勤務時間を小数点2桁で返す
-            worked_hours = worked_time.total_seconds() / 3600
-            return round(worked_hours, 2)
+            return round(worked_time.total_seconds() / 3600, 2)
+        return 0
+
+    def calculate_overtime(self):
+        if self.clock_out_time and self.shift:
+            shift_start_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.start_time))
+            shift_end_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.end_time))
+
+            clock_in_time = max(self.clock_in_time, shift_start_datetime)
+            clock_out_time = min(self.clock_out_time, shift_end_datetime)
+
+            if self.clock_in_time < shift_start_datetime:
+                clock_in_time = shift_start_datetime
+            if self.clock_out_time > shift_end_datetime:
+                clock_out_time = shift_end_datetime
+
+            regular_hours = shift_end_datetime - shift_start_datetime
+            worked_time = clock_out_time - clock_in_time
+
+            if worked_time > regular_hours:
+                overtime = worked_time - regular_hours
+                return round(overtime.total_seconds() / 3600, 2)
+            return 0
+        return 0
+
+    def calculate_early_leave(self):
+        if self.clock_out_time and self.shift:
+            shift_end_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.end_time))
+
+            clock_out_time = min(self.clock_out_time, shift_end_datetime)
+
+            if self.clock_out_time < shift_end_datetime:
+                early_leave = shift_end_datetime - clock_out_time
+                return round(early_leave.total_seconds() / 3600, 2)
+            return 0
         return 0
 
     def __str__(self):
