@@ -48,22 +48,45 @@
       }
       .form-group {
         margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
       .form-group label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
       }
-      .form-group input[type="submit"] {
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
+      .form-group input[type="submit"],
+      .form-group input[type="button"] {
+        padding: 12px 30px; /* ボタンサイズを大きくする */
         border: none;
-        border-radius: 5px;
+        border-radius: 8px; /* 角をより丸くする */
         cursor: pointer;
+        margin: 0 5px;
+        font-size: 16px; /* フォントサイズを大きくする */
+      }
+      .form-group input[type="submit"] {
+        background-color: #28a745; /* 出勤ボタンの色 */
+        color: white;
       }
       .form-group input[type="submit"]:hover {
-        background-color: #0056b3;
+        background-color: #218838; /* 出勤ボタンのホバー色 */
+      }
+      .form-group input[type="button"] {
+        background-color: #dc3545; /* 退勤ボタンの色 */
+        color: white;
+      }
+      .form-group input[type="button"]:hover {
+        background-color: #c82333; /* 退勤ボタンのホバー色 */
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .section h2 {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+        color: #007bff;
       }
     </style>
     <script>
@@ -111,27 +134,43 @@
           />
           <input type="submit" value="表示" />
         </form>
+      </div>
 
-        <p>今日の勤務時間: {{ today_worked_hours }} 時間</p>
+      <div class="section">
+        <h2>今日の勤務時間</h2>
+        <p>勤務時間: {{ today_worked_hours }} 時間</p>
         <p>残業時間: {{ today_overtime_hours }} 時間</p>
         <p>早退時間: {{ today_early_leave_hours }} 時間</p>
+      </div>
 
-        <p>選択した日付の勤務時間: {{ selected_day_worked_hours }} 時間</p>
+      <div class="section">
+        <h2>選択した日付の勤務情報</h2>
+        <p>勤務時間: {{ selected_day_worked_hours }} 時間</p>
         <p>残業時間: {{ selected_day_overtime_hours }} 時間</p>
         <p>早退時間: {{ selected_day_early_leave_hours }} 時間</p>
+      </div>
 
-        <form method="post" action="" class="form-group">
+      <div class="section">
+        <h2>今月の勤務情報</h2>
+        <p>勤務時間: {{ selected_day_worked_hours }} 時間</p>
+        <p>合計残業時間: {{ selected_day_overtime_hours }} 時間</p>
+        <p>合計早退時間: {{ selected_day_early_leave_hours }} 時間</p>
+      </div>
+
+      <div class="form-group">
+        <form method="post" action="">
           {% csrf_token %}
           <input type="submit" name="clock_in" value="出勤" />
         </form>
-        <form method="post" action="" class="form-group">
+        <form method="post" action="">
           {% csrf_token %}
-          <input type="submit" name="clock_out" value="退勤" />
+          <input type="button" name="clock_out" value="退勤" />
         </form>
-        <a href="{% url 'upload_shifts' %}" class="button"
-          >シフトアップロードページ</a
-        >
       </div>
+
+      <a href="{% url 'upload_shifts' %}" class="button"
+        >シフトアップロードページ</a
+      >
       <a href="{% url 'logout' %}" class="button">ログアウト</a>
     </div>
   </body>

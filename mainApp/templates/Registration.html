@@ -20,16 +20,27 @@
         border-radius: 5px;
         background-color: #f9f9f9;
       }
-      input[type="submit"] {
+      input[type="submit"],
+      input[type="button"] {
         padding: 10px 15px;
-        background-color: #007bff;
-        color: #fff;
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        margin-right: 10px;
+      }
+      input[type="submit"] {
+        background-color: #007bff;
+        color: #fff;
       }
       input[type="submit"]:hover {
         background-color: #0056b3;
+      }
+      input[type="button"] {
+        background-color: #6c757d;
+        color: #fff;
+      }
+      input[type="button"]:hover {
+        background-color: #5a6268;
       }
       .messages {
         margin-bottom: 15px;
@@ -64,6 +75,7 @@
     <form method="post" action="">
       {% csrf_token %} {{ form.as_p }}
       <input type="submit" value="登録" />
+      <input type="button" value="戻る" onclick="history.back()" />
     </form>
   </body>
 </html>
