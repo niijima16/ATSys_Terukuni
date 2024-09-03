@@ -2,6 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>トップページ</title>
     <style>
       body {
@@ -52,33 +53,28 @@
         justify-content: space-between;
         align-items: center;
       }
-      .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-      }
       .form-group input[type="submit"],
       .form-group input[type="button"] {
-        padding: 12px 30px; /* ボタンサイズを大きくする */
+        padding: 12px 30px;
         border: none;
-        border-radius: 8px; /* 角をより丸くする */
+        border-radius: 8px;
         cursor: pointer;
         margin: 0 5px;
-        font-size: 16px; /* フォントサイズを大きくする */
+        font-size: 16px;
       }
-      .form-group input[type="submit"] {
-        background-color: #28a745; /* 出勤ボタンの色 */
+      .form-group input[type="submit"].clock-in {
+        background-color: #28a745;
         color: white;
       }
-      .form-group input[type="submit"]:hover {
-        background-color: #218838; /* 出勤ボタンのホバー色 */
+      .form-group input[type="submit"].clock-in:hover {
+        background-color: #218838;
       }
-      .form-group input[type="button"] {
-        background-color: #dc3545; /* 退勤ボタンの色 */
+      .form-group input[type="submit"].clock-out {
+        background-color: #dc3545;
         color: white;
       }
-      .form-group input[type="button"]:hover {
-        background-color: #c82333; /* 退勤ボタンのホバー色 */
+      .form-group input[type="submit"].clock-out:hover {
+        background-color: #c82333;
       }
       .section {
         margin-bottom: 20px;
@@ -160,11 +156,16 @@
       <div class="form-group">
         <form method="post" action="">
           {% csrf_token %}
-          <input type="submit" name="clock_in" value="出勤" />
+          <input type="submit" name="clock_in" value="出勤" class="clock-in" />
         </form>
         <form method="post" action="">
           {% csrf_token %}
-          <input type="button" name="clock_out" value="退勤" />
+          <input
+            type="submit"
+            name="clock_out"
+            value="退勤"
+            class="clock-out"
+          />
         </form>
       </div>
 

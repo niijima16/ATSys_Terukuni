@@ -1,7 +1,9 @@
+# views.py
+
 import pandas as pd
 import csv
 from django.shortcuts import render, redirect
-from django.utils import timezone
+from django.utils.timezone import now
 from .models import User_Master, Shift, TimeStamp
 from .forms import LoginForm, ShiftUploadForm, RegisterForm
 from django.contrib import messages
@@ -17,7 +19,7 @@ def homePage(request):
             password = form.cleaned_data['password']
             try:
                 user = User_Master.objects.get(account_id=account)
-                if password == user.password:
+                if password == user.password:  # パスワード認証の改善を推奨
                     request.session['employee_number'] = user.employee_number  # セッションにemployee_numberを保存
                     return redirect('topPage')
                 else:
@@ -31,88 +33,87 @@ def homePage(request):
 
 # トップページ用
 def topPage(request):
-    employee_number = request.session.get('employee_number')
-    user = User_Master.objects.filter(employee_number=employee_number).first()
+    employee_number = request.session.get('employee_number')  # セッションからemployee_numberを取得
+    if not employee_number:
+        return redirect('homePage')  # セッションが無効な場合はログインページにリダイレクト
 
-    today = timezone.now().date()
-    selected_date_str = request.GET.get('date', str(today))
-    selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
-    
-    # 今日の勤務状況
-    today_worked_hours = 0
-    today_overtime_hours = 0
-    today_early_leave_hours = 0
-    
-    if user:
-        try:
-            time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today).latest('clock_in_time')
-            today_worked_hours = time_stamp.calculate_worked_hours()
-            today_overtime_hours = time_stamp.calculate_overtime()
-            today_early_leave_hours = time_stamp.calculate_early_leave()
-        except TimeStamp.DoesNotExist:
-            today_worked_hours = 0
-            today_overtime_hours = 0
-            today_early_leave_hours = 0
+    user = User_Master.objects.get(employee_number=employee_number)
 
-        # 今月の勤務時間合計
-        start_of_month = today.replace(day=1)
-        end_of_month = today.replace(day=28) + timedelta(days=4)
-        end_of_month = end_of_month - timedelta(days=end_of_month.day)
-        
-        month_timestamps = TimeStamp.objects.filter(user=user, clock_in_time__date__range=[start_of_month, end_of_month])
-        monthly_worked_hours = sum(ts.calculate_worked_hours() for ts in month_timestamps)
-        
-        # 選択された日付の勤務状況
-        selected_day_timestamps = TimeStamp.objects.filter(user=user, clock_in_time__date=selected_date)
-        selected_day_worked_hours = 0
-        selected_day_overtime_hours = 0
-        selected_day_early_leave_hours = 0
-        
-        for timestamp in selected_day_timestamps:
-            worked_hours = timestamp.calculate_worked_hours()
-            overtime = timestamp.calculate_overtime()
-            early_leave = timestamp.calculate_early_leave()
-            selected_day_worked_hours += worked_hours
-            selected_day_overtime_hours += overtime
-            selected_day_early_leave_hours += early_leave
+    # 今日の日付
+    today = now().date()
+    selected_date = request.GET.get('date', today)
+    selected_date = today if selected_date == "" else selected_date
 
-        if request.method == 'POST':
-            if 'clock_in' in request.POST:
-                existing_clock_in = TimeStamp.objects.filter(user=user, clock_in_time__date=today).exists()
-                if existing_clock_in:
-                    messages.error(request, '本日は既に出勤しております。')
-                else:
-                    TimeStamp.objects.create(
-                        user=user,
-                        clock_in_time=timezone.now()
-                    )
-                    messages.success(request, '出勤しました。')
-            
-            elif 'clock_out' in request.POST:
-                try:
-                    time_stamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today).latest('clock_in_time')
-                    time_stamp.clock_out_time = timezone.now()
-                    time_stamp.save()
-                    today_worked_hours = time_stamp.calculate_worked_hours()
-                    today_overtime_hours = time_stamp.calculate_overtime()
-                    today_early_leave_hours = time_stamp.calculate_early_leave()
-                    messages.success(request, '退勤しました。')
-                except TimeStamp.DoesNotExist:
-                    messages.error(request, '出勤記録が見つかりません。')
+    # 当日と選択した日の勤務情報取得
+    today_shift = Shift.objects.filter(user=user, date=today).first()
+    today_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today).first()
+    selected_shift = Shift.objects.filter(user=user, date=selected_date).first()
+    selected_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=selected_date).first()
 
-            return redirect('topPage')
+    # 今日の勤務情報
+    today_worked_hours, today_overtime_hours, today_early_leave_hours = calculate_hours(today_shift, today_timestamp)
 
-    return render(request, 'topPage.html', {
+    # 選択された日付の勤務情報
+    selected_worked_hours, selected_overtime_hours, selected_early_leave_hours = calculate_hours(selected_shift, selected_timestamp)
+
+    # 今月の勤務情報
+    month_start = today.replace(day=1)
+    month_shifts = Shift.objects.filter(user=user, date__gte=month_start, date__lte=today)
+    month_timestamps = TimeStamp.objects.filter(user=user, clock_in_time__date__gte=month_start, clock_in_time__date__lte=today)
+
+    total_worked_hours = 0
+    total_overtime_hours = 0
+    total_early_leave_hours = 0
+
+    for shift, timestamp in zip(month_shifts, month_timestamps):
+        worked, overtime, early_leave = calculate_hours(shift, timestamp)
+        total_worked_hours += worked
+        total_overtime_hours += overtime
+        total_early_leave_hours += early_leave
+
+    context = {
         'user_name': user.name,
         'today_worked_hours': today_worked_hours,
         'today_overtime_hours': today_overtime_hours,
         'today_early_leave_hours': today_early_leave_hours,
-        'monthly_worked_hours': monthly_worked_hours,
-        'selected_date': selected_date_str,
-        'selected_day_worked_hours': selected_day_worked_hours,
-        'selected_day_overtime_hours': selected_day_overtime_hours,
-        'selected_day_early_leave_hours': selected_day_early_leave_hours
-    })
+        'selected_date': selected_date,
+        'selected_day_worked_hours': selected_worked_hours,
+        'selected_day_overtime_hours': selected_overtime_hours,
+        'selected_day_early_leave_hours': selected_early_leave_hours,
+        'total_worked_hours': total_worked_hours,
+        'total_overtime_hours': total_overtime_hours,
+        'total_early_leave_hours': total_early_leave_hours,
+        'today_date': today,
+    }
+
+    return render(request, 'topPage.html', context)
+
+def calculate_hours(shift, timestamp):
+    """
+    Calculate worked hours, overtime, and early leave based on shift and timestamp.
+    """
+    if not shift or not timestamp:
+        return 0, 0, 0
+
+    # 今日の日付
+    today = datetime.today().date()
+
+    # シフトの開始・終了時刻を datetime オブジェクトとして設定（タイムゾーンなし）
+    shift_start = datetime.combine(today, shift.start_time).replace(tzinfo=None)
+    shift_end = datetime.combine(today, shift.end_time).replace(tzinfo=None)
+
+    # 出勤・退勤時刻をタイムゾーンなしの datetime オブジェクトとして設定
+    clock_in = timestamp.clock_in_time.replace(tzinfo=None)
+    clock_out = timestamp.clock_out_time.replace(tzinfo=None)
+
+    # 勤務時間の計算
+    worked_hours = (clock_out - clock_in).total_seconds() / 3600.0
+
+    # 残業と早退の計算
+    overtime = max(0, (clock_out - shift_end).total_seconds() / 3600.0) if clock_out > shift_end else 0
+    early_leave = max(0, (shift_end - clock_out).total_seconds() / 3600.0) if clock_out < shift_end else 0
+
+    return worked_hours, overtime, early_leave
 
 def registerPage(request):
     if request.method == 'POST':
@@ -160,7 +161,10 @@ def upload_shifts(request):
                         updated_shifts += 1
 
                 except User_Master.DoesNotExist:
-                    # ユーザーが存在しない場合のエラーハンドリング
+                    messages.error(request, f"ユーザー {row['employee_number']} が見つかりません。")
+                    continue
+                except Exception as e:
+                    messages.error(request, f"エラーが発生しました: {str(e)}")
                     continue
 
             # アップロード成功のメッセージを追加
