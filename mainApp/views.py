@@ -3,7 +3,7 @@
 import pandas as pd
 import csv
 from django.shortcuts import render, redirect
-from django.utils.timezone import now
+from django.utils.timezone import now, localtime
 from .models import User_Master, Shift, TimeStamp
 from .forms import LoginForm, ShiftUploadForm, RegisterForm
 from django.contrib import messages

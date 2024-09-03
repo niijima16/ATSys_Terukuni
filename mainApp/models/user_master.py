@@ -19,7 +19,7 @@ class User_Master(models.Model):
     department_name = models.CharField(max_length=255)
     
     POSITION_CHOICES = [
-        ('社員', 'ß社員'),
+        ('社員', '社員'),
         ('リーダー', 'リーダー'),
         ('マネージャー', 'マネージャー'),
         ('課長', '課長'),
