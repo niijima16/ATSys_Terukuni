@@ -3,7 +3,7 @@
 import pandas as pd
 import csv
 from django.shortcuts import render, redirect
-from django.utils.timezone import now, localtime
+from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp
 from .forms import LoginForm, ShiftUploadForm, RegisterForm
 from django.contrib import messages
@@ -40,7 +40,7 @@ def topPage(request):
     user = User_Master.objects.get(employee_number=employee_number)
 
     # 今日の日付
-    today = now().date()
+    today = datetime.today().date()
     selected_date = request.GET.get('date', today)
     selected_date = today if selected_date == "" else selected_date
 
@@ -58,18 +58,9 @@ def topPage(request):
 
     # 今月の勤務情報
     month_start = today.replace(day=1)
-    month_shifts = Shift.objects.filter(user=user, date__gte=month_start, date__lte=today)
     month_timestamps = TimeStamp.objects.filter(user=user, clock_in_time__date__gte=month_start, clock_in_time__date__lte=today)
 
-    total_worked_hours = 0
-    total_overtime_hours = 0
-    total_early_leave_hours = 0
-
-    for shift, timestamp in zip(month_shifts, month_timestamps):
-        worked, overtime, early_leave = calculate_hours(shift, timestamp)
-        total_worked_hours += worked
-        total_overtime_hours += overtime
-        total_early_leave_hours += early_leave
+    monthly_summary = TimeStamp.get_monthly_summary(user, month_start, today)
 
     context = {
         'user_name': user.name,
@@ -80,9 +71,9 @@ def topPage(request):
         'selected_day_worked_hours': selected_worked_hours,
         'selected_day_overtime_hours': selected_overtime_hours,
         'selected_day_early_leave_hours': selected_early_leave_hours,
-        'total_worked_hours': total_worked_hours,
-        'total_overtime_hours': total_overtime_hours,
-        'total_early_leave_hours': total_early_leave_hours,
+        'total_worked_hours': monthly_summary['total_worked_hours'],
+        'total_overtime_hours': monthly_summary['total_overtime_hours'],
+        'total_early_leave_hours': monthly_summary['total_early_leave_hours'],
         'today_date': today,
     }
 
@@ -90,30 +81,50 @@ def topPage(request):
 
 def calculate_hours(shift, timestamp):
     """
-    Calculate worked hours, overtime, and early leave based on shift and timestamp.
+    勤務時間、残業時間、早退時間をシフトとタイムスタンプに基づいて計算する。
     """
     if not shift or not timestamp:
         return 0, 0, 0
 
-    # 今日の日付
-    today = datetime.today().date()
+    # シフトとタイムスタンプの日時をタイムゾーン対応に変換
+    shift_date = shift.date  # シフトの日付を使用
+    shift_start = datetime.combine(shift_date, shift.start_time)
+    shift_end = datetime.combine(shift_date, shift.end_time)
 
-    # シフトの開始・終了時刻を datetime オブジェクトとして設定（タイムゾーンなし）
-    shift_start = datetime.combine(today, shift.start_time).replace(tzinfo=None)
-    shift_end = datetime.combine(today, shift.end_time).replace(tzinfo=None)
+    # shift_startとshift_endがnaive（タイムゾーンなし）の場合、timezoneを付与
+    if timezone.is_naive(shift_start):
+        shift_start = timezone.make_aware(shift_start, timezone.get_current_timezone())
+    if timezone.is_naive(shift_end):
+        shift_end = timezone.make_aware(shift_end, timezone.get_current_timezone())
 
-    # 出勤・退勤時刻をタイムゾーンなしの datetime オブジェクトとして設定
-    clock_in = timestamp.clock_in_time.replace(tzinfo=None)
-    clock_out = timestamp.clock_out_time.replace(tzinfo=None)
+    clock_in = timestamp.clock_in_time
+    clock_out = timestamp.clock_out_time
+
+    # clock_inとclock_outがnaive（タイムゾーンなし）の場合、timezoneを付与
+    if clock_in and timezone.is_naive(clock_in):
+        clock_in = timezone.make_aware(clock_in, timezone.get_current_timezone())
+    if clock_out and timezone.is_naive(clock_out):
+        clock_out = timezone.make_aware(clock_out, timezone.get_current_timezone())
 
     # 勤務時間の計算
-    worked_hours = (clock_out - clock_in).total_seconds() / 3600.0
+    if clock_in and clock_out:
+        worked_hours = (clock_out - clock_in).total_seconds() / 3600.0
 
-    # 残業と早退の計算
-    overtime = max(0, (clock_out - shift_end).total_seconds() / 3600.0) if clock_out > shift_end else 0
-    early_leave = max(0, (shift_end - clock_out).total_seconds() / 3600.0) if clock_out < shift_end else 0
+        # 早出の時間（シフト開始時間より前に出勤した場合）
+        early_overtime = max(0, (shift_start - clock_in).total_seconds() / 3600.0) if clock_in < shift_start else 0
 
-    return worked_hours, overtime, early_leave
+        # 通常の残業時間（シフト終了時間を超えた場合）
+        late_overtime = max(0, (clock_out - shift_end).total_seconds() / 3600.0) if clock_out > shift_end else 0
+
+        # 総残業時間は早出残業と通常の残業の合計
+        overtime = early_overtime + late_overtime
+
+        # 早退の計算（シフト終了時間前に退勤した場合）
+        early_leave = max(0, (shift_end - clock_out).total_seconds() / 3600.0) if clock_out < shift_end and clock_out > shift_start else 0
+
+        return worked_hours, overtime, early_leave
+    else:
+        return 0, 0, 0
 
 def registerPage(request):
     if request.method == 'POST':
