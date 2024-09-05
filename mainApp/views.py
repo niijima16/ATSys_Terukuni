@@ -108,7 +108,12 @@ def calculate_hours(shift, timestamp):
 
     # 勤務時間の計算
     if clock_in and clock_out:
-        worked_hours = (clock_out - clock_in).total_seconds() / 3600.0
+        # 出勤から退勤までの総時間を計算
+        worked_time = (clock_out - clock_in)
+
+        # 休憩時間を差し引く
+        worked_time -= shift.break_time
+        worked_hours = max(worked_time.total_seconds() / 3600.0, 0)  # 勤務時間は負の値にならないようにする
 
         # 早出の時間（シフト開始時間より前に出勤した場合）
         early_overtime = max(0, (shift_start - clock_in).total_seconds() / 3600.0) if clock_in < shift_start else 0
