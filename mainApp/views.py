@@ -2,7 +2,7 @@
 
 import pandas as pd
 import csv
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp, LeaveRequest, PaidLeave
 from .forms import LoginForm, ShiftUploadForm, RegisterForm, LeaveRequestForm
@@ -82,6 +82,7 @@ def topPage(request):
         'total_early_leave_hours': monthly_summary['total_early_leave_hours'],
         'today_date': today,
         'paid_leave': paid_leave,
+        'employee_number': employee_number,
     }
 
     return render(request, 'topPage.html', context)
@@ -139,14 +140,13 @@ def calculate_hours(shift, timestamp):
     else:
         return 0, 0, 0
 
-# 有給用
+# 有給申請用
 def apply_leave(request):
-    employee_number = request.session.get('employee_number')
+    employee_number = request.session.get('employee_number')  # セッションからemployee_numberを取得
     if not employee_number:
-        return redirect('homePage')
+        return redirect('homePage')  # セッションが無効な場合はログインページにリダイレクト
 
-    user = User_Master.objects.get(employee_number=employee_number)
-    paid_leave = PaidLeave.objects.get(user=user)
+    user = get_object_or_404(User_Master, employee_number=employee_number)
 
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST)
@@ -154,22 +154,22 @@ def apply_leave(request):
             leave_request = form.save(commit=False)
             leave_request.user = user
 
-            # 有給休暇の場合の処理
-            if leave_request.is_paid_leave:
-                days_requested = (leave_request.end_date - leave_request.start_date).days + 1
-                if days_requested > paid_leave.remaining_days:
-                    messages.error(request, '有給休暇の残り日数が足りません。')
-                    return redirect('apply_leave')
-                else:
-                    paid_leave.used_days += days_requested
-                    paid_leave.save()
+            # 有給残日数のチェック
+            if leave_request.leave_type == 'Paid':
+                paid_leave = PaidLeave.objects.get(user=user)
+                requested_days = (leave_request.end_date - leave_request.start_date).days + 1
+
+                if requested_days > paid_leave.remaining_days:
+                    messages.error(request, '申請日数が残り有給日数を超えています。')
+                    return render(request, 'apply_leave.html', {'form': form})
+
             leave_request.save()
-            messages.success(request, '休暇の申請が送信されました。')
+            messages.success(request, '有給申請が正常に送信されました。')
             return redirect('topPage')
     else:
         form = LeaveRequestForm()
 
-    return render(request, 'apply_leave.html', {'form': form, 'paid_leave': paid_leave})
+    return render(request, 'apply_leave.html', {'form': form})
 
 # 社員情報登録用
 def registerPage(request):

@@ -36,4 +36,4 @@ class Shift(models.Model):
     def __str__(self):
         start = self.start_time.strftime('%H:%M') if self.start_time else '休み'
         end = self.end_time.strftime('%H:%M') if self.end_time else '休み'
-        return f"{self.user.name} - {self.date} ({self.weekday}) - {start} to {end}"
+        return f"{self.user.employee_number} - {self.date} ({self.weekday}) - {start} to {end}"

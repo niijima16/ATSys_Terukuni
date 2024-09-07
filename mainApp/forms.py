@@ -1,7 +1,7 @@
 # mainApp/forms.py
+
 from django import forms
-from .models import User_Master
-from .models import LeaveRequest
+from .models import User_Master, LeaveRequest
 
 class RegisterForm(forms.ModelForm):
     class Meta:
@@ -20,12 +20,10 @@ class LoginForm(forms.Form):
 class ShiftUploadForm(forms.Form):
     csv_file = forms.FileField(label='CSVファイルを選択')
 
-from .models import LeaveRequest
-
 class LeaveRequestForm(forms.ModelForm):
     class Meta:
         model = LeaveRequest
-        fields = ['leave_type', 'start_date', 'end_date', 'is_paid_leave']
+        fields = ['leave_type', 'start_date', 'end_date']  # 'is_paid_leave'を削除
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
