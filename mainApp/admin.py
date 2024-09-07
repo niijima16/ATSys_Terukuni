@@ -4,6 +4,8 @@ from mainApp.models.leave_type import LeaveType
 from mainApp.models.time_stamp import TimeStamp
 from mainApp.models.time_shift import Shift
 from mainApp.models.leave_request import LeaveRequest
+from mainApp.models.paid_leave import PaidLeave
+
 
 @admin.register(User_Master)
 class UserMasterAdmin(admin.ModelAdmin):
@@ -34,9 +36,6 @@ class ShiftAdmin(admin.ModelAdmin):
     def get_employee_number(self, obj):
         return obj.user.employee_number
     get_employee_number.short_description = 'Employee Number'
-
-@admin.register(LeaveRequest)
-class LeaveRequestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'leave_type', 'start_date', 'end_date', 'approved')
-    search_fields = ('user__name', 'leave_type__name', 'start_date', 'end_date')
-    list_filter = ('leave_type', 'approved')
+    
+admin.site.register(PaidLeave)
+admin.site.register(LeaveRequest)
