@@ -1,83 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Upload Shifts</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      h1 {
-        color: #333;
-      }
-      .messages {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-      }
-      .messages li {
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-      }
-      .success {
-        background-color: #d4edda;
-        color: #155724;
-        display: flex;
-        align-items: center;
-      }
-      .error {
-        background-color: #f8d7da;
-        color: #721c24;
-        display: flex;
-        align-items: center;
-      }
-      .icon {
-        margin-right: 8px;
-      }
-      form {
-        margin-top: 20px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        max-width: 400px;
-      }
-      button {
-        padding: 10px 15px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #0056b3;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Excelファイルからシフトをアップロード</h1>
-    
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-            {% if message.tags == 'success' %}
-              <span class="icon">✔️</span>
-            {% elif message.tags == 'error' %}
-              <span class="icon">❌</span>
-            {% endif %}
-            {{ message }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" aria-label="Upload Excel File">アップロード</button>
-    </form>
-  </body>
-</html>
+{% extends "base.html" %} {% block title %}シフトアップロード{% endblock %} {% block content %}
+<h1>Excelファイルからシフトをアップロード</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" aria-label="Upload Excel File">アップロード</button>
+</form>
+{% endblock %}

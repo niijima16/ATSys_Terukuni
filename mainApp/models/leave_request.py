@@ -7,13 +7,14 @@ class LeaveRequest(models.Model):
     LEAVE_TYPE_CHOICES = [
         ('Paid', '有給'),
         ('Sick', '病気'),
-        ('personalMatter', '私事'),
+        ('PersonalMatter', '私事'),
     ]
 
     user = models.ForeignKey(User_Master, on_delete=models.CASCADE)
     leave_type = models.CharField(max_length=50, choices=LEAVE_TYPE_CHOICES)
     start_date = models.DateField()
     end_date = models.DateField()
+    is_paid_leave = models.BooleanField(default=False)  # 有給かどうかのフラグ
     approved = models.BooleanField(default=False)
 
     def __str__(self):

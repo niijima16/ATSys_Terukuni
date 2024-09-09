@@ -30,5 +30,6 @@ urlpatterns = [
     path('topPage/', views.topPage, name='topPage'),
     path('upload_shifts/', views.upload_shifts, name='upload_shifts'),
     path('logout/', views.logout, name='logout'),
+    path('apply_leave/', views.apply_leave, name='apply_leave'),
 
 ]

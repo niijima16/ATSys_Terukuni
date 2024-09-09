@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Django Project{% endblock %}</title>
+    <style>
+      .section {
+        margin-bottom: 20px;
+      }
+      .section h2 {
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+        color: #007bff;
+      }
+      .messages {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+      .messages li {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .icon {
+        margin-right: 8px;
+      }
+      form {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        max-width: 400px;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+    <script>
+      function twoDigit(num) {
+        return num < 10 ? "0" + num : num;
+      }
+
+      function showClock() {
+        let nowTime = new Date();
+        let nowHour = twoDigit(nowTime.getHours());
+        let nowMin = twoDigit(nowTime.getMinutes());
+        let nowSec = twoDigit(nowTime.getSeconds());
+        let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
+        document.getElementById("realtime").innerHTML = msg;
+      }
+
+      setInterval(showClock, 1000);
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>勤怠管理システム</h1>
+      <p>お疲れ様です、社員番号{{ employee_number }} {{ user_name }}さん。</p>
+      <p id="realtime"></p>
+      <nav>
+        <a href="{% url 'topPage' %}">トップページ</a>
+        <a href="{% url 'apply_leave' %}">有給申請</a>
+        <a href="{% url 'upload_shifts' %}">シフトアップロードページ</a>
+        <a href="{% url 'logout' %}">ログアウト</a>
+      </nav>
+    </header>
+    <main>
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+              {% if message.tags == 'success' %}
+                <span class="icon">✔️</span>
+              {% elif message.tags == 'error' %}
+                <span class="icon">❌</span>
+              {% endif %}
+              {{ message }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}
+      <!-- ページごとのコンテンツがここに入る -->
+      {% endblock %}
+    </main>
+  </body>
+</html>

@@ -14,5 +14,15 @@ class PaidLeave(models.Model):
         self.remaining_days = self.total_days - self.used_days
         super().save(*args, **kwargs)
 
+    def use_leave(self, days):
+        """
+        指定した日数の有給を使用するメソッド。
+        """
+        if days <= self.remaining_days:
+            self.used_days += days
+            self.save()
+        else:
+            raise ValueError("指定された日数が残り有給日数を超えています。")
+
     def __str__(self):
         return f"{self.user.name} - 残り有給: {self.remaining_days}日"

@@ -62,26 +62,44 @@ class TimeStamp(models.Model):
             return 0
         return 0
 
+    def calculate_late_arrival(self):
+        """
+        Calculates the late arrival hours for this timestamp.
+        """
+        if self.clock_in_time and self.shift:
+            shift_start_datetime = timezone.make_aware(datetime.combine(self.shift.date, self.shift.start_time))
+            clock_in_time = self.clock_in_time
+
+            # Late arrival calculation
+            if clock_in_time > shift_start_datetime:
+                late_arrival = clock_in_time - shift_start_datetime
+                return max(round(late_arrival.total_seconds() / 3600, 2), 0)  # Make sure it's non-negative
+            return 0
+        return 0
+
     @classmethod
     def get_monthly_summary(cls, user, month_start, today):
         """
-        Calculates total worked hours, overtime, and early leave for a user in a given month.
+        Calculates total worked hours, overtime, early leave, and late arrival for a user in a given month.
         """
         timestamps = cls.objects.filter(user=user, clock_in_time__date__gte=month_start, clock_in_time__date__lte=today)
 
         total_worked_hours = 0
         total_overtime_hours = 0
         total_early_leave_hours = 0
+        total_late_arrival_hours = 0
 
         for timestamp in timestamps:
             total_worked_hours += timestamp.calculate_worked_hours()
             total_overtime_hours += timestamp.calculate_overtime()
             total_early_leave_hours += timestamp.calculate_early_leave()
+            total_late_arrival_hours += timestamp.calculate_late_arrival()
 
         return {
             'total_worked_hours': total_worked_hours,
             'total_overtime_hours': total_overtime_hours,
-            'total_early_leave_hours': total_early_leave_hours
+            'total_early_leave_hours': total_early_leave_hours,
+            'total_late_arrival_hours': total_late_arrival_hours
         }
 
     def __str__(self):

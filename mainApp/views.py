@@ -1,13 +1,13 @@
 # views.py
 
-import pandas as pd
-import csv
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp, LeaveRequest, PaidLeave
 from .forms import LoginForm, ShiftUploadForm, RegisterForm, LeaveRequestForm
-from django.contrib import messages
 from datetime import datetime, timedelta
+
 
 # ホームページ用
 def homePage(request):
@@ -32,6 +32,8 @@ def homePage(request):
     return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
 
 # トップページ用
+# トップページ用
+@login_required
 def topPage(request):
     employee_number = request.session.get('employee_number')  # セッションからemployee_numberを取得
     if not employee_number:
@@ -51,10 +53,10 @@ def topPage(request):
     selected_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=selected_date).first()
 
     # 今日の勤務情報
-    today_worked_hours, today_overtime_hours, today_early_leave_hours = calculate_hours(today_shift, today_timestamp)
+    today_worked_hours, today_overtime_hours, today_early_leave_hours, today_late_arrival_hours = calculate_hours(today_shift, today_timestamp)
 
     # 選択された日付の勤務情報
-    selected_worked_hours, selected_overtime_hours, selected_early_leave_hours = calculate_hours(selected_shift, selected_timestamp)
+    selected_worked_hours, selected_overtime_hours, selected_early_leave_hours, selected_late_arrival_hours = calculate_hours(selected_shift, selected_timestamp)
 
     # 今月の勤務情報
     month_start = today.replace(day=1)
@@ -73,30 +75,57 @@ def topPage(request):
         'today_worked_hours': today_worked_hours,
         'today_overtime_hours': today_overtime_hours,
         'today_early_leave_hours': today_early_leave_hours,
+        'today_late_arrival_hours': today_late_arrival_hours,
         'selected_date': selected_date,
         'selected_day_worked_hours': selected_worked_hours,
         'selected_day_overtime_hours': selected_overtime_hours,
         'selected_day_early_leave_hours': selected_early_leave_hours,
+        'selected_day_late_arrival_hours': selected_late_arrival_hours,
         'total_worked_hours': monthly_summary['total_worked_hours'],
         'total_overtime_hours': monthly_summary['total_overtime_hours'],
         'total_early_leave_hours': monthly_summary['total_early_leave_hours'],
+        'total_late_arrival_hours': monthly_summary['total_late_arrival_hours'],
         'today_date': today,
         'paid_leave': paid_leave,
         'employee_number': employee_number,
     }
+
+    if request.method == 'POST':
+        if 'clock_in' in request.POST:
+            # 出勤処理
+            today = datetime.today().date()
+            existing_entry = TimeStamp.objects.filter(user=user, clock_in_time__date=today, clock_out_time__isnull=True).exists()
+            if existing_entry:
+                messages.warning(request, '既に出勤記録があります。')
+            else:
+                clock_in_time = timezone.now()
+                TimeStamp.objects.create(user=user, clock_in_time=clock_in_time)
+                messages.success(request, '出勤が記録されました。')
+        elif 'clock_out' in request.POST:
+            # 退勤処理
+            today = datetime.today().date()
+            timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today, clock_out_time__isnull=True).last()
+            if timestamp:
+                clock_out_time = timezone.now()
+                timestamp.clock_out_time = clock_out_time
+                timestamp.save()
+                messages.success(request, '退勤が記録されました。')
+            else:
+                messages.error(request, '出勤記録が見つかりません。')
+        return redirect('topPage')
 
     return render(request, 'topPage.html', context)
 
 #残業早退用
 def calculate_hours(shift, timestamp):
     """
-    勤務時間、残業時間、早退時間をシフトとタイムスタンプに基づいて計算する。
+    勤務時間、残業時間、早退時間、遅刻時間をシフトとタイムスタンプに基づいて計算する。
     """
     if not shift or not timestamp:
-        return 0, 0, 0
+        return 0, 0, 0, 0  # 遅刻時間も追加
 
     # シフトとタイムスタンプの日時をタイムゾーン対応に変換
-    shift_date = shift.date  # シフトの日付を使用
+    shift_date = shift.date
     shift_start = datetime.combine(shift_date, shift.start_time)
     shift_end = datetime.combine(shift_date, shift.end_time)
 
@@ -130,15 +159,16 @@ def calculate_hours(shift, timestamp):
         # 通常の残業時間（シフト終了時間を超えた場合）
         late_overtime = max(0, (clock_out - shift_end).total_seconds() / 3600.0) if clock_out > shift_end else 0
 
-        # 総残業時間は早出残業と通常の残業の合計
-        overtime = early_overtime + late_overtime
-
         # 早退の計算（シフト終了時間前に退勤した場合）
-        early_leave = max(0, (shift_end - clock_out).total_seconds() / 3600.0) if clock_out < shift_end and clock_out > shift_start else 0
+        early_leave = max(0, (shift_end - clock_out).total_seconds() / 3600.0) if clock_out < shift_end else 0
 
-        return worked_hours, overtime, early_leave
+        # 遅刻の計算（シフト開始時間より後に出勤した場合）
+        late_arrival = max(0, (clock_in - shift_start).total_seconds() / 3600.0) if clock_in > shift_start else 0
+
+        # 小数点以下2桁に丸める
+        return round(worked_hours, 2), round(early_overtime + late_overtime, 2), round(early_leave, 2), round(late_arrival, 2)
     else:
-        return 0, 0, 0
+        return 0, 0, 0, 0
 
 # 有給申請用
 def apply_leave(request):
@@ -163,6 +193,14 @@ def apply_leave(request):
                     messages.error(request, '申請日数が残り有給日数を超えています。')
                     return render(request, 'apply_leave.html', {'form': form})
 
+                # 残り有給日数の更新
+                try:
+                    paid_leave.use_leave(requested_days)
+                except ValueError as e:
+                    messages.error(request, str(e))
+                    return render(request, 'apply_leave.html', {'form': form})
+
+            leave_request.approved = False  # 初期状態で申請は未承認
             leave_request.save()
             messages.success(request, '有給申請が正常に送信されました。')
             return redirect('topPage')
@@ -237,3 +275,4 @@ def upload_shifts(request):
 def logout(request):
     request.session.flush()  # セッションをクリア
     return redirect('homePage')  # ログインページにリダイレクト
+

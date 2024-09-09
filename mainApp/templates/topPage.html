@@ -1,115 +1,58 @@
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>トップページ</title>
-    <style>
-      /* (ここに既存のCSSスタイルが入ります) */
-      .section {
-        margin-bottom: 20px;
-      }
-      .section h2 {
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 5px;
-        color: #007bff;
-      }
-    </style>
-    <script>
-      function twoDigit(num) {
-        return num < 10 ? "0" + num : num;
-      }
+{% extends "base.html" %}
 
-      function showClock() {
-        let nowTime = new Date();
-        let nowHour = twoDigit(nowTime.getHours());
-        let nowMin = twoDigit(nowTime.getMinutes());
-        let nowSec = twoDigit(nowTime.getSeconds());
-        let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
-        document.getElementById("realtime").innerHTML = msg;
-      }
+{% block title %}トップページ{% endblock %}
 
-      setInterval(showClock, 1000);
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <h1>トップページ</h1>
-      <div>
-        <p>お疲れ様です、社員番号{{ employee_number }} {{ user_name }}さん。</p>
-        <p id="realtime"></p>
-      </div>
-
-      {% if messages %}
-      <div>
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <div>
+{% block content %}
+<div class="container">
+    <h2>トップページ</h2>
+    <div>
         <form method="get" action="" class="form-group">
-          <label for="date">表示する日付を選択してください:</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value="{{ selected_date }}"
-            max="{{ today_date }}"
-          />
-          <input type="submit" value="表示" />
+            <label for="date">表示する日付を選択してください:</label>
+            <input type="date" id="date" name="date" value="{{ selected_date }}" max="{{ today_date }}" />
+            <input type="submit" value="表示" />
         </form>
-      </div>
+    </div>
 
-      <div class="section">
+    <div class="section">
         <h2>今日の勤務時間</h2>
         <p>勤務時間: {{ today_worked_hours }} 時間</p>
         <p>残業時間: {{ today_overtime_hours }} 時間</p>
         <p>早退時間: {{ today_early_leave_hours }} 時間</p>
-      </div>
+        <p>遅刻時間: {{ today_late_arrival_hours }} 時間</p>
+    </div>
 
-      <div class="section">
+    <div class="section">
         <h2>選択した日付の勤務情報</h2>
         <p>勤務時間: {{ selected_day_worked_hours }} 時間</p>
         <p>残業時間: {{ selected_day_overtime_hours }} 時間</p>
         <p>早退時間: {{ selected_day_early_leave_hours }} 時間</p>
-      </div>
+        <p>遅刻時間: {{ selected_day_late_arrival_hours }} 時間</p>
+    </div>
 
-      <div class="section">
+    <div class="section">
         <h2>今月の勤務情報</h2>
         <p>勤務時間: {{ total_worked_hours }} 時間</p>
         <p>合計残業時間: {{ total_overtime_hours }} 時間</p>
         <p>合計早退時間: {{ total_early_leave_hours }} 時間</p>
-      </div>
+        <p>合計遅刻時間: {{ total_late_arrival_hours }} 時間</p>
+    </div>
 
-      {% if paid_leave %}
-      <div class="section">
+    {% if paid_leave %}
+    <div class="section">
         <h2>有給休暇情報</h2>
         <p>残り有給日数: {{ paid_leave.remaining_days }} 日</p>
-      </div>
-      {% endif %}
-
-      <div class="form-group">
-        <form method="post" action="">
-          {% csrf_token %}
-          <input type="submit" name="clock_in" value="出勤" class="clock-in" />
-        </form>
-        <form method="post" action="">
-          {% csrf_token %}
-          <input
-            type="submit"
-            name="clock_out"
-            value="退勤"
-            class="clock-out"
-          />
-        </form>
-      </div>
-
-      <a href="{% url 'upload_shifts' %}" class="button"
-        >シフトアップロードページ</a
-      >
-      <a href="{% url 'logout' %}" class="button">ログアウト</a>
     </div>
-  </body>
-</html>
+    {% endif %}
+
+    <div class="form-group">
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="submit" name="clock_in" value="出勤" class="clock-in" />
+        </form>
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="submit" name="clock_out" value="退勤" class="clock-out" />
+        </form>
+    </div>
+</div>
+{% endblock %}
