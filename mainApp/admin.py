@@ -1,3 +1,5 @@
+# admin.py
+
 from django.contrib import admin
 from mainApp.models.user_master import User_Master
 from mainApp.models.leave_type import LeaveType
@@ -5,7 +7,6 @@ from mainApp.models.time_stamp import TimeStamp
 from mainApp.models.time_shift import Shift
 from mainApp.models.leave_request import LeaveRequest
 from mainApp.models.paid_leave import PaidLeave
-
 
 @admin.register(User_Master)
 class UserMasterAdmin(admin.ModelAdmin):
@@ -36,6 +37,17 @@ class ShiftAdmin(admin.ModelAdmin):
     def get_employee_number(self, obj):
         return obj.user.employee_number
     get_employee_number.short_description = 'Employee Number'
-    
-admin.site.register(PaidLeave)
+
+@admin.register(PaidLeave)
+class PaidLeaveAdmin(admin.ModelAdmin):
+    list_display = ('get_employee_number', 'get_name', 'remaining_days')
+
+    def get_employee_number(self, obj):
+        return obj.user.employee_number
+    get_employee_number.short_description = 'Employee Number'
+
+    def get_name(self, obj):
+        return obj.user.name
+    get_name.short_description = 'Name'
+
 admin.site.register(LeaveRequest)

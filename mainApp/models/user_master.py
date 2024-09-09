@@ -47,4 +47,4 @@ class User_Master(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.employee_number}"
