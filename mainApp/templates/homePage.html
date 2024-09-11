@@ -73,7 +73,8 @@
         {% endif %}
       </div>
       <form method="post" action="">
-        {% csrf_token %} {{ form.as_p }}
+        {% csrf_token %} 
+        {{ form.as_p }}
         <input type="submit" value="ログイン" />
       </form>
       <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>

@@ -12,8 +12,9 @@ from datetime import datetime, timedelta
 # ホームページ用
 def homePage(request):
     error_message = None
+    form = LoginForm(request.POST or None)
+    
     if request.method == 'POST':
-        form = LoginForm(request.POST)
         if form.is_valid():
             account = form.cleaned_data['user_id']
             password = form.cleaned_data['password']
@@ -26,12 +27,28 @@ def homePage(request):
                     error_message = 'パスワードが正しくありません。'
             except User_Master.DoesNotExist:
                 error_message = 'アカウントが見つかりません。'
-    else:
-        form = LoginForm()
+    
+    # セッションから employee_number を取得
+    employee_number = request.session.get('employee_number')
+    user_name = None
 
-    return render(request, 'HomePage.html', {'form': form, 'error_message': error_message})
+    if employee_number:
+        try:
+            user = User_Master.objects.get(employee_number=employee_number)
+            user_name = user.name
+        except User_Master.DoesNotExist:
+            # ユーザーが存在しない場合の処理
+            pass
 
-# トップページ用
+    context = {
+        'form': form,
+        'error_message': error_message,
+        'employee_number': employee_number,
+        'user_name': user_name,
+    }
+
+    return render(request, 'HomePage.html', context)
+
 # トップページ用
 @login_required
 def topPage(request):
