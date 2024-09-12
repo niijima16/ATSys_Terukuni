@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}有給承認待ち{% endblock %} 
+{% block content %}
+<h2>承認待ちの有給申請</h2>
+
+{% if pending_requests %}
+    <ul>
+    {% for request in pending_requests %}
+        <li>
+            {{ request.user.name }} - {{ request.leave_type.name }} from {{ request.start_date }} to {{ request.end_date }}
+            {% if request.user in request.get_superiors %}
+                <a href="{% url 'approve_leave_request' request.id %}">承認する</a>
+            {% else %}
+                承認権限がありません
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>承認待ちの申請はありません。</p>
+{% endif %}
+
+{% endblock %}

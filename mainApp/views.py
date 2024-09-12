@@ -226,6 +226,45 @@ def apply_leave(request):
 
     return render(request, 'apply_leave.html', {'form': form})
 
+# 有給承認用
+@login_required
+def approve_leave_request(request, leave_request_id):
+    """
+    有給申請の承認ビュー。上長がこのビューにアクセスして承認を行います。
+    """
+    leave_request = get_object_or_404(LeaveRequest, id=leave_request_id)
+    user = request.user  # 現在ログインしているユーザー
+
+    # 上長でない場合、エラーメッセージを表示
+    if user not in leave_request.get_superiors():
+        messages.error(request, 'あなたにはこの申請を承認する権限がありません。')
+        return redirect('leave_request_list')
+
+    # すでに承認済みのユーザーでない場合、承認者リストに追加
+    if user not in leave_request.approved_by.all():
+        leave_request.approved_by.add(user)
+        leave_request.save()
+        messages.success(request, '有給申請を承認しました。')
+
+    return redirect('leave_request_list')
+
+@login_required
+@login_required
+def leave_request_list(request):
+    # DjangoのUserモデルからユーザーを取得
+    user = request.user
+    try:
+        # User_Masterをuser_idでフィルタリング
+        user_master = User_Master.objects.get(user_id=user.id)
+        leave_requests = LeaveRequest.objects.filter(user=user_master)
+    except User_Master.DoesNotExist:
+        # User_Masterが存在しない場合は空のクエリセットを設定
+        leave_requests = LeaveRequest.objects.none()
+        # 必要に応じてメッセージや通知を追加
+        # messages.warning(request, 'User Master not found.')
+
+    return render(request, 'leave_requests.html', {'leave_requests': leave_requests})
+
 # 社員情報登録用
 def registerPage(request):
     if request.method == 'POST':

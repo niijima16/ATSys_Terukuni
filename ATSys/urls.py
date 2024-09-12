@@ -31,5 +31,7 @@ urlpatterns = [
     path('upload_shifts/', views.upload_shifts, name='upload_shifts'),
     path('logout/', views.logout, name='logout'),
     path('apply_leave/', views.apply_leave, name='apply_leave'),
+    path('approve_leave/<int:leave_request_id>/', views.approve_leave_request, name='approve_leave_request'),
+    path('leave_requests/', views.leave_request_list, name='leave_request_list'),
 
 ]

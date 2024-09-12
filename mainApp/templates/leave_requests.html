@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Requests{% endblock %}
+
+{% block content %}
+<h2>Leave Requests</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Leave Type</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Approved</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in leave_requests %}
+        <tr>
+            <td>{{ request.user.name }}</td>
+            <td>{{ request.get_leave_type_display }}</td>
+            <td>{{ request.start_date }}</td>
+            <td>{{ request.end_date }}</td>
+            <td>{{ request.approved }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No leave requests found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -29,6 +29,17 @@ class User_Master(models.Model):
     ]
     position = models.CharField(max_length=10, choices=POSITION_CHOICES, default='社員')
     employee_number = models.PositiveIntegerField(unique=True, editable=False)
+    
+    def get_superiors(self):
+        """
+        このユーザーの上長を取得するヘルパーメソッド。
+        取締役と社長は除外します。
+        """
+        positions_order = ['社員', 'リーダー', 'マネージャー', '課長', '部長']
+        user_position_index = positions_order.index(self.position)
+        # ユーザーより上の役職に属する全てのユーザーを取得
+        superiors = User_Master.objects.filter(position__in=positions_order[user_position_index + 1:])
+        return superiors
 
     def save(self, *args, **kwargs):
         if not self.user_id:
