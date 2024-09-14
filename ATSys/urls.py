@@ -31,7 +31,7 @@ urlpatterns = [
     path('upload_shifts/', views.upload_shifts, name='upload_shifts'),
     path('logout/', views.logout, name='logout'),
     path('apply_leave/', views.apply_leave, name='apply_leave'),
-    path('leave_requests/', views.leave_requests, name='leave_requests'),
-    path('approve_leave/<int:leave_request_id>/', views.approve_leave, name='approve_leave'), 
-
+    path('leave_requests/', views.leave_requests, name='leave_requests'),  # 既存のleave_requestsを利用
+    path('leave_request_list/', views.leave_requests, name='leave_request_list'),  # 新しく追加
+    path('approve_leave/<int:leave_request_id>/', views.approve_leave, name='approve_leave'),
 ]

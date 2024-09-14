@@ -7,6 +7,7 @@ from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp, LeaveRequest, PaidLeave
 from .forms import LoginForm, ShiftUploadForm, RegisterForm, LeaveRequestForm, ApproveLeaveForm
 from datetime import datetime, timedelta
+import csv
 
 
 # ホームページ用
@@ -308,7 +309,8 @@ def upload_shifts(request):
                 try:
                     user = User_Master.objects.get(employee_number=row['employee_number'])
                     
-                    date = datetime.strptime(row['date'], '%Y-%m-%d').date()
+                    # CSVの日付フォーマット 'YYYY/MM/DD' を 'YYYY-MM-DD' に変換
+                    date = datetime.strptime(row['date'], '%Y/%m/%d').date()  # ここでフォーマットを修正
                     start_time = row['start_time'] if row['start_time'] else None
                     end_time = row['end_time'] if row['end_time'] else None
                     
@@ -332,7 +334,7 @@ def upload_shifts(request):
                 except User_Master.DoesNotExist:
                     messages.error(request, f"ユーザー {row['employee_number']} が見つかりません。")
                     continue
-                except Exception as e:
+                except ValueError as e:
                     messages.error(request, f"エラーが発生しました: {str(e)}")
                     continue
 
