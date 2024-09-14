@@ -1,3 +1,4 @@
+<!-- homePage.html -->
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -8,7 +9,7 @@
       body {
         font-family: Arial, sans-serif;
         margin: 0;
-        background-color: #f4f4f4;
+        background-color: #e9ecef; /* 少し淡い背景色 */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -17,29 +18,49 @@
       .container {
         width: 100%;
         max-width: 400px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        padding: 40px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
         background-color: #fff;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 少し立体感を付与 */
+        text-align: center;
       }
       h1 {
         color: #333;
-        text-align: center;
-        margin-bottom: 20px;
+        font-size: 24px;
+        margin-bottom: 30px;
+        font-weight: bold;
       }
       form {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
       }
       input[type="submit"] {
-        padding: 10px 15px;
+        padding: 12px;
+        font-size: 16px;
         background-color: #007bff;
         color: #fff;
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        width: 100%;
+        transition: background-color 0.3s;
       }
       input[type="submit"]:hover {
         background-color: #0056b3;
@@ -49,35 +70,41 @@
         background-color: #f8d7da;
         padding: 10px;
         border-radius: 5px;
-        text-align: center;
+        margin-bottom: 20px;
       }
       a {
         display: block;
         margin-top: 20px;
-        text-align: center;
         color: #007bff;
         text-decoration: none;
         font-weight: bold;
+        font-size: 14px;
       }
       a:hover {
         text-decoration: underline;
+      }
+      .forgot-password {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #6c757d;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>ログインページ</h1>
+      <h1>ログイン</h1>
       <div id="message">
         {% if error_message %}
         <p>{{ error_message }}</p>
         {% endif %}
       </div>
       <form method="post" action="">
-        {% csrf_token %} 
+        {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="ログイン" />
       </form>
       <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
+      <p class="forgot-password">パスワードをお忘れですか？</p>
     </div>
   </body>
 </html>

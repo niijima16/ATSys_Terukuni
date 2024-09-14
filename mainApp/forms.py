@@ -22,15 +22,25 @@ class ShiftUploadForm(forms.Form):
 
 # 有給申請フォーム
 class LeaveRequestForm(forms.ModelForm):
-    applicant_comment = forms.CharField(widget=forms.Textarea, required=False, label='申請者のコメント')  # 申請者のコメント欄を追加
+    applicant_comment = forms.CharField(widget=forms.Textarea, required=False, label='申請者のコメント')
 
     class Meta:
         model = LeaveRequest
-        fields = ['leave_type', 'start_date', 'end_date', 'applicant_comment']  # applicant_commentを追加
+        fields = ['leave_type', 'start_date', 'end_date', 'applicant_comment']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("開始日は終了日よりも前である必要があります。")
+
+        return cleaned_data
 
 # 承認時に使用するフォーム
 class ApproveLeaveForm(forms.ModelForm):
