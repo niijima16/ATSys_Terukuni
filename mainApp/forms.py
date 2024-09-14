@@ -20,11 +20,22 @@ class LoginForm(forms.Form):
 class ShiftUploadForm(forms.Form):
     csv_file = forms.FileField(label='CSVファイルを選択')
 
+# 有給申請フォーム
 class LeaveRequestForm(forms.ModelForm):
+    applicant_comment = forms.CharField(widget=forms.Textarea, required=False, label='申請者のコメント')  # 申請者のコメント欄を追加
+
     class Meta:
         model = LeaveRequest
-        fields = ['leave_type', 'start_date', 'end_date']  # 'is_paid_leave'を削除
+        fields = ['leave_type', 'start_date', 'end_date', 'applicant_comment']  # applicant_commentを追加
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+# 承認時に使用するフォーム
+class ApproveLeaveForm(forms.ModelForm):
+    approver_comment = forms.CharField(widget=forms.Textarea, required=False, label='承認者のコメント')  # 承認者のコメント欄を追加
+
+    class Meta:
+        model = LeaveRequest
+        fields = ['approver_comment']  # 承認者のコメントフィールドのみを扱う

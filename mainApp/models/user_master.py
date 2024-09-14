@@ -46,5 +46,24 @@ class User_Master(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_superiors(self):
+        """
+        自分より上の役職のユーザーを返すメソッド。
+        承認権限のあるユーザーを返します。
+        """
+        superior_positions = ['社員', 'リーダー', 'マネージャー', '課長', '部長']
+        position_hierarchy = {
+            '社員': ['リーダー', 'マネージャー', '課長', '部長', '取締役', '社長'],
+            'リーダー': ['マネージャー', '課長', '部長', '取締役', '社長'],
+            'マネージャー': ['課長', '部長', '取締役', '社長'],
+            '課長': ['部長', '取締役', '社長'],
+            '部長': ['取締役', '社長'],
+        }
+
+        # 自分の役職のリストに基づいて承認権限のある役職のユーザーを取得
+        if self.position in position_hierarchy:
+            return User_Master.objects.filter(position__in=position_hierarchy[self.position])
+        return User_Master.objects.none()
+
     def __str__(self):
         return f"{self.name} - {self.employee_number}"

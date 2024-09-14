@@ -1,3 +1,4 @@
+<!-- base.html -->
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -76,11 +77,18 @@
     <header>
       <h1>勤怠管理システム</h1>
       <p>お疲れ様です、社員番号{{ employee_number }} {{ user_name }}さん。</p>
+      <p>役職: {{ position }}</p> <!-- ログイン中の役職も表示 -->
       <p id="realtime"></p>
       <nav>
         <a href="{% url 'topPage' %}">トップページ</a>
         <a href="{% url 'apply_leave' %}">有給申請</a>
         <a href="{% url 'upload_shifts' %}">シフトアップロードページ</a>
+
+        <!-- 承認権限を持つ役職のユーザーにのみ表示 -->
+        {% if position == 'リーダー' or position == 'マネージャー' or position == '課長' or position == '部長' %}
+          <a href="{% url 'leave_requests' %}">承認リクエスト一覧</a>
+        {% endif %}
+        
         <a href="{% url 'logout' %}">ログアウト</a>
       </nav>
     </header>

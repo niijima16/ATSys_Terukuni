@@ -1,17 +1,21 @@
 <!-- apply_leave.html -->
 
-{% extends "base.html" %} {% block title %}有給申請{% endblock %} 
+{% extends "base.html" %} 
+{% block title %}有給申請{% endblock %} 
 {% block content %}
 <h2>有給申請</h2>
 
-{% if messages %} {% for message in messages %}
-<div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-  {{ message }}
-</div>
-{% endfor %} {% endif %}
+{% if messages %} 
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %} 
+{% endif %}
 
 <form method="post">
-  {% csrf_token %} {{ form.as_p }}
+  {% csrf_token %} 
+  {{ form.as_p }} <!-- 申請者のコメントも含む -->
   <button type="submit" class="btn btn-primary">申請する</button>
 </form>
 

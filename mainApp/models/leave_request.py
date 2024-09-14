@@ -16,6 +16,8 @@ class LeaveRequest(models.Model):
     end_date = models.DateField()
     is_paid_leave = models.BooleanField(default=False)  # 有給かどうかのフラグ
     approved = models.BooleanField(default=False)
+    applicant_comment = models.TextField(blank=True, null=True)  # 申請者のコメント
+    approver_comment = models.TextField(blank=True, null=True)  # 承認者のコメント
 
     def __str__(self):
         return f"{self.user.name} - {self.get_leave_type_display()} ({self.start_date} から {self.end_date})"
