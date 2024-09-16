@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import csv
 
 
-# ホームページ用
+# カスタムログイン機能を作成
 def homePage(request):
     error_message = None
     form = LoginForm(request.POST or None)
@@ -20,8 +20,11 @@ def homePage(request):
             account = form.cleaned_data['user_id']
             password = form.cleaned_data['password']
             try:
+                # ユーザーが存在するか確認
                 user = User_Master.objects.get(account_id=account)
-                if password == user.password:  # パスワード認証の改善を推奨
+                
+                # パスワード認証（ハッシュ化なし、プレーンテキストでチェック）
+                if password == user.password:
                     request.session['employee_number'] = user.employee_number  # セッションにemployee_numberを保存
                     return redirect('topPage')
                 else:
@@ -38,7 +41,6 @@ def homePage(request):
             user = User_Master.objects.get(employee_number=employee_number)
             user_name = user.name
         except User_Master.DoesNotExist:
-            # ユーザーが存在しない場合の処理
             pass
 
     context = {
@@ -50,13 +52,18 @@ def homePage(request):
 
     return render(request, 'HomePage.html', context)
 
+# カスタム認証をチェックするデコレーター
+def custom_login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if 'employee_number' not in request.session:
+            return redirect('homePage')  # ログインしていない場合、ログインページにリダイレクト
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 # トップページ用
-@login_required
+@custom_login_required
 def topPage(request):
     employee_number = request.session.get('employee_number')  # セッションからemployee_numberを取得
-    if not employee_number:
-        return redirect('homePage')  # セッションが無効な場合はログインページにリダイレクト
-
     user = User_Master.objects.get(employee_number=employee_number)
 
     # 今日の日付
@@ -64,29 +71,25 @@ def topPage(request):
     selected_date = request.GET.get('date', today)
     selected_date = today if selected_date == "" else selected_date
 
-    # 当日と選択した日の勤務情報取得
+    # 勤務情報の取得
     today_shift = Shift.objects.filter(user=user, date=today).first()
     today_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today).first()
     selected_shift = Shift.objects.filter(user=user, date=selected_date).first()
     selected_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=selected_date).first()
 
-    # 今日の勤務情報
+    # 勤務情報の計算
     today_worked_hours, today_overtime_hours, today_early_leave_hours, today_late_arrival_hours = calculate_hours(today_shift, today_timestamp)
-
-    # 選択された日付の勤務情報
     selected_worked_hours, selected_overtime_hours, selected_early_leave_hours, selected_late_arrival_hours = calculate_hours(selected_shift, selected_timestamp)
 
     # 今月の勤務情報
     month_start = today.replace(day=1)
-    month_timestamps = TimeStamp.objects.filter(user=user, clock_in_time__date__gte=month_start, clock_in_time__date__lte=today)
-
     monthly_summary = TimeStamp.get_monthly_summary(user, month_start, today)
 
     # 有給の取得
     try:
         paid_leave = PaidLeave.objects.get(user=user)
     except PaidLeave.DoesNotExist:
-        paid_leave = PaidLeave.objects.create(user=user)  # 新しく作成する場合もあります
+        paid_leave = PaidLeave.objects.create(user=user)
 
     context = {
         'user_name': user.name,
@@ -267,7 +270,7 @@ def approve_leave(request, leave_request_id):
     return render(request, 'approve_leave.html', context)
 
 # 承認者リスト
-@login_required
+@custom_login_required
 def leave_requests(request):
     employee_number = request.session.get('employee_number')
     user = get_object_or_404(User_Master, employee_number=employee_number)
@@ -349,6 +352,10 @@ def upload_shifts(request):
 
 # ログアウト
 def logout(request):
-    request.session.flush()  # セッションをクリア
-    return redirect('homePage')  # ログインページにリダイレクト
+    # セッションから特定のキーのみ削除
+    if 'employee_number' in request.session:
+        del request.session['employee_number']
+    # メッセージを表示してログインページにリダイレクト
+    messages.success(request, 'ログアウトしました。')
+    return redirect('homePage')
 
