@@ -3,13 +3,44 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from .models import User_Master, Shift, TimeStamp, LeaveRequest, PaidLeave
-from .forms import LoginForm, ShiftUploadForm, RegisterForm, LeaveRequestForm, ApproveLeaveForm
+from .forms import LoginForm, ShiftUploadForm, RegisterForm, LeaveRequestForm, ApproveLeaveForm, EmployeeEditForm
 from datetime import datetime, timedelta
 import csv
 
+# 以下はデコレーター置き場(仮)
 
+# カスタム認証をチェックするデコレーター
+def custom_login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if 'employee_number' not in request.session:
+            return redirect('homePage')  # ログインしていない場合、ログインページにリダイレクト
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+# 編集権限判断用デコレーター
+def manager_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        employee_number = request.session.get('employee_number')
+        if not employee_number:
+            return redirect('homePage')
+
+        user = User_Master.objects.get(employee_number=employee_number)
+
+        # マネージャー以上の役職リスト
+        manager_positions = ['マネージャー', '課長', '部長', '取締役', '社長']
+
+        # ユーザーがマネージャー以上かをチェック
+        if user.position not in manager_positions:
+            raise PermissionDenied("この操作を行う権限がありません。")
+
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+################################################################################################################
 # カスタムログイン機能を作成
 def homePage(request):
     error_message = None
@@ -51,14 +82,6 @@ def homePage(request):
     }
 
     return render(request, 'HomePage.html', context)
-
-# カスタム認証をチェックするデコレーター
-def custom_login_required(view_func):
-    def wrapper(request, *args, **kwargs):
-        if 'employee_number' not in request.session:
-            return redirect('homePage')  # ログインしていない場合、ログインページにリダイレクト
-        return view_func(request, *args, **kwargs)
-    return wrapper
 
 # トップページ用
 @custom_login_required
@@ -297,6 +320,47 @@ def registerPage(request):
     else:
         form = RegisterForm()
     return render(request, 'Registration.html', {'form': form})
+
+# 情報編集用
+@custom_login_required
+@manager_required
+def edit_employee(request, employee_id):
+    manager = User_Master.objects.get(employee_number=request.session.get('employee_number'))
+    employee = get_object_or_404(User_Master, employee_number=employee_id)
+
+    position_hierarchy = ['社員', 'リーダー', 'マネージャー', '課長', '部長', '取締役', '社長']
+    manager_position_index = position_hierarchy.index(manager.position)
+    employee_position_index = position_hierarchy.index(employee.position)
+
+    # 自分自身の情報を編集する場合
+    if manager == employee:
+        if request.method == 'POST':
+            form = EmployeeEditForm(request.POST, instance=employee, user=manager)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '自分の情報が更新されました。')
+                return redirect('topPage')
+        else:
+            form = EmployeeEditForm(instance=employee, user=manager)
+    
+    # 自分より下の役職の社員の情報を編集する場合
+    elif employee_position_index < manager_position_index:
+        if request.method == 'POST':
+            form = EmployeeEditForm(request.POST, instance=employee)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '社員情報が更新されました。')
+                return redirect('employee_list')
+        else:
+            form = EmployeeEditForm(instance=employee)
+    
+    # 自分より上の役職や同じ役職の社員情報は編集不可
+    else:
+        messages.error(request, 'この社員の情報を編集する権限がありません。')
+        return redirect('homePage')
+
+    context = {'form': form, 'employee': employee}
+    return render(request, 'edit_employee.html', context)
 
 # シフトをアップロード用
 def upload_shifts(request):

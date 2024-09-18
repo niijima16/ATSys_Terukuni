@@ -1,0 +1,25 @@
+<!-- edit_employee.html -->
+{% extends "base.html" %}
+
+{% block title %}
+  社員情報編集
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <h2>社員情報編集</h2>
+
+  <!-- 編集対象の社員情報の表示 -->
+  <p>社員番号: {{ employee.employee_number }}</p>
+  <p>名前: {{ employee.name }}</p>
+  <p>役職: {{ employee.position }}</p>
+  
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- フォームのフィールドを表示 -->
+    <button type="submit">更新</button>
+  </form>
+
+  <p>編集する社員の情報を修正してください。</p>
+</div>
+{% endblock %}

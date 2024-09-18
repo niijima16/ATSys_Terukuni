@@ -49,3 +49,24 @@ class ApproveLeaveForm(forms.ModelForm):
     class Meta:
         model = LeaveRequest
         fields = ['approver_comment']  # 承認者のコメントフィールドのみを扱う
+        
+# 情報編集フォーム
+class EmployeeEditForm(forms.ModelForm):
+    class Meta:
+        model = User_Master
+        fields = ['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
+        widgets = {
+            'password': forms.PasswordInput(),
+            'joined': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # 自分の情報を編集する場合、特定のフィールドを編集不可にする
+        if user and user == self.instance:
+            self.fields['account_id'].disabled = True
+            self.fields['joined'].disabled = True
+            self.fields['department_name'].disabled = True
+            self.fields['position'].disabled = True

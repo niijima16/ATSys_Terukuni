@@ -6,13 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Django Project{% endblock %}</title>
     <style>
-      .section {
-        margin-bottom: 20px;
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e9ecef;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
       }
-      .section h2 {
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 5px;
-        color: #007bff;
+      header {
+        background-color: #007bff;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
+      header p {
+        margin: 5px 0;
+      }
+      nav a {
+        margin: 0 10px;
+        color: white;
+        text-decoration: none;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+      main {
+        flex: 1;
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
       }
       .messages {
         list-style-type: none;
@@ -56,39 +84,27 @@
         background-color: #0056b3;
       }
     </style>
-    <script>
-      function twoDigit(num) {
-        return num < 10 ? "0" + num : num;
-      }
-
-      function showClock() {
-        let nowTime = new Date();
-        let nowHour = twoDigit(nowTime.getHours());
-        let nowMin = twoDigit(nowTime.getMinutes());
-        let nowSec = twoDigit(nowTime.getSeconds());
-        let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
-        document.getElementById("realtime").innerHTML = msg;
-      }
-
-      setInterval(showClock, 1000);
-    </script>
   </head>
   <body>
     <header>
       <h1>勤怠管理システム</h1>
       <p>お疲れ様です、社員番号{{ employee_number }} {{ user_name }}さん。</p>
-      <p>役職: {{ position }}</p> <!-- ログイン中の役職も表示 -->
-      <p id="realtime"></p>
+      <p>役職: {{ position }}</p> <!-- ログイン中の役職を表示 -->
       <nav>
         <a href="{% url 'topPage' %}">トップページ</a>
         <a href="{% url 'apply_leave' %}">有給申請</a>
         <a href="{% url 'upload_shifts' %}">シフトアップロードページ</a>
 
-        <!-- 承認権限を持つ役職のユーザーにのみ表示 -->
-        {% if position == 'リーダー' or position == 'マネージャー' or position == '課長' or position == '部長' %}
+        <!-- 承認リクエスト一覧はリーダー以上に表示 -->
+        {% if position == 'リーダー' or position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
           <a href="{% url 'leave_requests' %}">承認リクエスト一覧</a>
         {% endif %}
-        
+
+        <!-- 社員情報編集はマネージャー以上に表示 -->
+        {% if position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
+          <a href="{% url 'edit_employee' employee_number %}">社員情報編集</a>
+        {% endif %}
+
         <a href="{% url 'logout' %}">ログアウト</a>
       </nav>
     </header>
