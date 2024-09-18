@@ -33,5 +33,5 @@ urlpatterns = [
     path('apply_leave/', views.apply_leave, name='apply_leave'),
     path('leave_requests/', views.leave_requests, name='leave_requests'),
     path('approve_leave/<int:leave_request_id>/', views.approve_leave, name='approve_leave'),
-    path('edit_employee/<int:employee_id>/', views.edit_employee, name='edit_employee'),
+    path('edit_employee/', views.edit_employee, name='edit_employee'),
 ]

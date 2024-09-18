@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import csv
 
 # 以下はデコレーター置き場(仮)
-
 # カスタム認証をチェックするデコレーター
 def custom_login_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -41,6 +40,8 @@ def manager_required(view_func):
 
 
 ################################################################################################################
+
+#以下が機能の実装
 # カスタムログイン機能を作成
 def homePage(request):
     error_message = None
@@ -324,42 +325,43 @@ def registerPage(request):
 # 情報編集用
 @custom_login_required
 @manager_required
-def edit_employee(request, employee_id):
+def edit_employee(request):
     manager = User_Master.objects.get(employee_number=request.session.get('employee_number'))
-    employee = get_object_or_404(User_Master, employee_number=employee_id)
+    employee_number = request.GET.get('employee_number')
 
+    if not employee_number:
+        messages.error(request, "社員番号が指定されていません。")
+        return redirect('topPage')
+
+    employee = get_object_or_404(User_Master, employee_number=employee_number)
+
+    # 自分自身を編集しようとしているか確認
+    is_self = (manager.employee_number == employee.employee_number)
+
+    # マネージャー以上か確認
+    is_manager = manager.position in ['マネージャー', '課長', '部長', '取締役', '社長']
+
+    # 編集対象が上長か確認
     position_hierarchy = ['社員', 'リーダー', 'マネージャー', '課長', '部長', '取締役', '社長']
     manager_position_index = position_hierarchy.index(manager.position)
     employee_position_index = position_hierarchy.index(employee.position)
+    
+    is_superior = (employee_position_index > manager_position_index)
 
-    # 自分自身の情報を編集する場合
-    if manager == employee:
-        if request.method == 'POST':
-            form = EmployeeEditForm(request.POST, instance=employee, user=manager)
-            if form.is_valid():
-                form.save()
-                messages.success(request, '自分の情報が更新されました。')
-                return redirect('topPage')
-        else:
-            form = EmployeeEditForm(instance=employee, user=manager)
-    
-    # 自分より下の役職の社員の情報を編集する場合
-    elif employee_position_index < manager_position_index:
-        if request.method == 'POST':
-            form = EmployeeEditForm(request.POST, instance=employee)
-            if form.is_valid():
-                form.save()
-                messages.success(request, '社員情報が更新されました。')
-                return redirect('employee_list')
-        else:
-            form = EmployeeEditForm(instance=employee)
-    
-    # 自分より上の役職や同じ役職の社員情報は編集不可
+    if request.method == 'POST':
+        form = EmployeeEditForm(request.POST, instance=employee, is_self=is_self, is_manager=is_manager, is_superior=is_superior)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '社員情報が更新されました。')
+            return redirect('topPage')
     else:
-        messages.error(request, 'この社員の情報を編集する権限がありません。')
-        return redirect('homePage')
+        form = EmployeeEditForm(instance=employee, is_self=is_self, is_manager=is_manager, is_superior=is_superior)
 
-    context = {'form': form, 'employee': employee}
+    context = {
+        'form': form,
+        'employee': employee,
+        'is_self': is_self,
+    }
     return render(request, 'edit_employee.html', context)
 
 # シフトをアップロード用

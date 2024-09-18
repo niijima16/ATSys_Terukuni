@@ -54,18 +54,23 @@ class ApproveLeaveForm(forms.ModelForm):
 class EmployeeEditForm(forms.ModelForm):
     class Meta:
         model = User_Master
-        fields = ['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
-        widgets = {
-            'password': forms.PasswordInput(),
-            'joined': forms.DateInput(attrs={'type': 'date'}),
-        }
+        fields = ['account_id', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        
-        # 自分の情報を編集する場合、特定のフィールドを編集不可にする
-        if user and user == self.instance:
+        is_manager = kwargs.pop('is_manager', False)
+        is_self = kwargs.pop('is_self', False)
+        is_superior = kwargs.pop('is_superior', False)
+        super(EmployeeEditForm, self).__init__(*args, **kwargs)
+
+        # 自分自身を編集する場合、常に特定フィールドを無効にする
+        if is_self:
+            self.fields['account_id'].disabled = True
+            self.fields['joined'].disabled = True
+            self.fields['department_name'].disabled = True
+            self.fields['position'].disabled = True
+
+        # 上長を編集している場合、特定フィールドを無効にする
+        elif is_superior:
             self.fields['account_id'].disabled = True
             self.fields['joined'].disabled = True
             self.fields['department_name'].disabled = True
