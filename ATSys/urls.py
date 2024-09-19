@@ -34,4 +34,5 @@ urlpatterns = [
     path('leave_requests/', views.leave_requests, name='leave_requests'),
     path('approve_leave/<int:leave_request_id>/', views.approve_leave, name='approve_leave'),
     path('edit_employee/', views.edit_employee, name='edit_employee'),
+    path('edit_timestamp/', views.edit_timestamp, name='edit_timestamp'),
 ]

@@ -1,7 +1,7 @@
 # mainApp/forms.py
 
 from django import forms
-from .models import User_Master, LeaveRequest
+from .models import User_Master, LeaveRequest, TimeStamp
 
 class RegisterForm(forms.ModelForm):
     class Meta:
@@ -75,3 +75,24 @@ class EmployeeEditForm(forms.ModelForm):
             self.fields['joined'].disabled = True
             self.fields['department_name'].disabled = True
             self.fields['position'].disabled = True
+            
+# 勤務時間編集フォーム
+class TimeStampEditForm(forms.ModelForm):
+    class Meta:
+        model = TimeStamp
+        fields = ['clock_in_time', 'clock_out_time']
+
+    def __init__(self, *args, **kwargs):
+        is_manager = kwargs.pop('is_manager', False)
+        is_self = kwargs.pop('is_self', False)
+        super(TimeStampEditForm, self).__init__(*args, **kwargs)
+
+        # 自分自身の勤務時間を編集できないようにする
+        if is_self:
+            self.fields['clock_in_time'].disabled = True
+            self.fields['clock_out_time'].disabled = True
+
+        # 管理者以外は勤務時間を編集できない
+        if not is_manager:
+            self.fields['clock_in_time'].disabled = True
+            self.fields['clock_out_time'].disabled = True

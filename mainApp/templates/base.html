@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Django Project{% endblock %}</title>
+    <title>{% block title %}勤怠管理システム{% endblock %}</title>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -131,17 +131,18 @@
         <a href="{% url 'topPage' %}">トップページ</a>
         <a href="{% url 'apply_leave' %}">有給申請</a>
         <a href="{% url 'upload_shifts' %}">シフトアップロードページ</a>
-
+    
         <!-- 承認リクエスト一覧はリーダー以上に表示 -->
         {% if position == 'リーダー' or position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
           <a href="{% url 'leave_requests' %}">承認リクエスト一覧</a>
+          <a href="{% url 'edit_timestamp' %}?employee_number={{ employee_number }}">勤怠情報編集</a>
         {% endif %}
-
+    
         <!-- 社員情報編集はマネージャー以上に表示 -->
         {% if position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
           <a href="{% url 'edit_employee' %}?employee_number={{ employee_number }}">社員情報編集</a>
         {% endif %}
-
+    
         <a href="{% url 'logout' %}">ログアウト</a>
       </nav>
     </header>
