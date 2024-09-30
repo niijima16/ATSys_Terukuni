@@ -1,3 +1,5 @@
+# decorators.py
+
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from .models import User_Master
