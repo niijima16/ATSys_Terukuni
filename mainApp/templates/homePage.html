@@ -1,6 +1,5 @@
 <!-- homePage.html -->
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -96,6 +95,15 @@
       .forgot-password {
         color: #6c757d;
         font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+        padding: 5px;
+        border-radius: 5px;
+      }
+
+      .forgot-password:hover {
+        background-color: #f8d7da;
+        color: #721c24;
       }
 
       footer {
@@ -104,6 +112,11 @@
         color: #6c757d;
       }
     </style>
+    <script>
+      function showForgotPasswordPopup() {
+        alert("パスワードを忘れた場合は、上長へ連絡してください。");
+      }
+    </script>
   </head>
   <body>
     <div class="container">
@@ -119,7 +132,7 @@
         <button type="submit">ログイン</button>
       </form>
       <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
-      <p class="forgot-password">パスワードをお忘れですか？</p>
+      <p class="forgot-password" onclick="showForgotPasswordPopup()">パスワードをお忘れですか？</p>
       <footer>&copy; 2024 勤怠管理システム</footer>
     </div>
   </body>
