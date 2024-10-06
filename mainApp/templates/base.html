@@ -1,0 +1,173 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}勤怠管理システム{% endblock %}</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        color: #333;
+      }
+      header {
+        background-color: #007bff;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+      header p {
+        margin: 5px 0;
+        font-size: 1rem;
+      }
+      nav {
+        margin-top: 10px;
+      }
+      nav a {
+        margin: 0 10px;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 15px;
+        background-color: #0062cc;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+      nav a:hover {
+        background-color: #0056b3;
+      }
+      main {
+        flex: 1;
+        padding: 40px 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .messages {
+        list-style-type: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+      }
+      .messages li {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+      }
+      form {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      form input[type="text"],
+      form input[type="email"],
+      form select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      button {
+        padding: 12px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      footer {
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+        padding: 10px 0;
+        margin-top: auto;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>勤怠管理システム</h1>
+      <p>お疲れ様です、社員番号{{ employee_number }} {{ user_name }}さん。</p>
+      <p>役職: {{ position }}</p> <!-- ログイン中の役職を表示 -->
+      <nav>
+        <a href="{% url 'topPage' %}">トップページ</a>
+        <a href="{% url 'apply_leave' %}">有給申請</a>
+        <a href="{% url 'upload_shifts' %}">シフトアップロードページ</a>
+    
+        <!-- 承認リクエスト一覧はリーダー以上に表示 -->
+        {% if position == 'リーダー' or position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
+          <a href="{% url 'leave_requests' %}">承認リクエスト一覧</a>
+          <a href="{% url 'edit_timestamp' %}?employee_number={{ employee_number }}">勤怠情報編集</a>
+        {% endif %}
+    
+        <!-- 社員情報編集はマネージャー以上に表示 -->
+        {% if position == 'マネージャー' or position == '課長' or position == '部長' or position == '取締役' or position == '社長' %}
+          <a href="{% url 'edit_employee' %}?employee_number={{ employee_number }}">社員情報編集</a>
+        {% endif %}
+    
+        <a href="{% url 'logout' %}">ログアウト</a>
+      </nav>
+    </header>
+    <main>
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+              {% if message.tags == 'success' %}
+                <span class="icon">✔️</span>
+              {% elif message.tags == 'error' %}
+                <span class="icon">❌</span>
+              {% endif %}
+              {{ message }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% block content %}
+      <!-- ページごとのコンテンツがここに入る -->
+      {% endblock %}
+    </main>
+
+    <footer>
+      &copy; 2024 勤怠管理システム
+    </footer>
+  </body>
+</html>

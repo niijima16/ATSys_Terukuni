@@ -1,21 +1,139 @@
+<!-- homePage.html -->
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログインページ</title>
-</head>
-<body>
-<h1>ログインページ</h1>
-<div id="message">
-    {% if error_message %}
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+        font-weight: bold;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        padding: 12px;
+        font-size: 16px;
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        outline: none;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      #message p {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+        margin-top: 15px;
+        font-size: 14px;
+        display: block;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .forgot-password {
+        color: #6c757d;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+        padding: 5px;
+        border-radius: 5px;
+      }
+
+      .forgot-password:hover {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      footer {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #6c757d;
+      }
+    </style>
+    <script>
+      function showForgotPasswordPopup() {
+        alert("パスワードを忘れた場合は、上長へ連絡してください。");
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ログイン</h1>
+      <div id="message">
+        {% if error_message %}
         <p>{{ error_message }}</p>
-    {% endif %}
-</div>
-<form method="post" action="">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="ログイン">
-</form>
-<a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
-</body>
+        {% endif %}
+      </div>
+      <form method="post" action="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">ログイン</button>
+      </form>
+      <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>
+      <p class="forgot-password" onclick="showForgotPasswordPopup()">パスワードをお忘れですか？</p>
+      <footer>&copy; 2024 勤怠管理システム</footer>
+    </div>
+  </body>
 </html>

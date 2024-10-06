@@ -1,23 +1,9 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Upload Shifts</title>
-  </head>
-  <body>
-    <h1>Upload Shifts from Excel</h1>
-    
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Upload</button>
-    </form>
-  </body>
-</html>
+{% extends "base.html" %} {% block title %}シフトアップロード{% endblock %} {% block content %}
+<h1>Excelファイルからシフトをアップロード</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" aria-label="Upload Excel File">アップロード</button>
+</form>
+{% endblock %}

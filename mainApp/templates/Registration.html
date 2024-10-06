@@ -1,15 +1,122 @@
+<!-- Registration.html -->
+
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ユーザー登録ページ</title>
-</head>
-<body>
-<h1>ユーザー登録ページ</h1>
-<form method="post" action="">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="登録">
-</form>
-</body>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+      }
+      .container {
+        width: 100%;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      form {
+        margin-top: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: bold;
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="number"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      input[type="submit"],
+      input[type="button"] {
+        width: 48%;
+        padding: 10px 0;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      input[type="submit"] {
+        background-color: #28a745;
+        color: #fff;
+      }
+      input[type="submit"]:hover {
+        background-color: #218838;
+      }
+      input[type="button"] {
+        background-color: #6c757d;
+        color: #fff;
+      }
+      input[type="button"]:hover {
+        background-color: #5a6268;
+      }
+      .button-group {
+        display: flex;
+        justify-content: space-between;
+      }
+      .messages {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .messages li {
+        list-style-type: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ユーザー登録</h1>
+
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <form method="post" action="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="button-group">
+          <input type="submit" value="登録" />
+          <input type="button" value="戻る" onclick="history.back()" />
+        </div>
+      </form>
+    </div>
+  </body>
 </html>

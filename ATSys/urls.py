@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from mainApp import views
+from mainApp.views.auth_views import homePage, topPage, logout
+from mainApp.views.employee_views import registerPage, edit_employee
+from mainApp.views.attendance_views import edit_timestamp
+from mainApp.views.leave_views import apply_leave, leave_requests, approve_leave
+from mainApp.views.shift_views import upload_shifts
 
 
 """
@@ -25,9 +29,14 @@ https://docs.google.com/document/d/1GoGZs8twXaYwMq4uEY6W7ryWamZTpWFlzd0VrIR81fs/
 """
 urlpatterns = [
     path('TerukuniAdmin/', admin.site.urls),
-    path('homePage/', views.homePage, name='homePage'),
-    path('register/', views.registerPage, name='registerPage'),
-    path('topPage/', views.topPage, name='topPage'),
-    path('upload_shifts/', views.upload_shifts, name='upload_shifts'),
-    path('shift_success/', views.shift_success, name='shift_success'),
+    path('homePage/', homePage, name='homePage'),
+    path('register/', registerPage, name='registerPage'),
+    path('topPage/', topPage, name='topPage'),
+    path('upload_shifts/', upload_shifts, name='upload_shifts'),
+    path('logout/', logout, name='logout'),
+    path('apply_leave/', apply_leave, name='apply_leave'),
+    path('leave_requests/', leave_requests, name='leave_requests'),
+    path('approve_leave/<int:leave_request_id>/', approve_leave, name='approve_leave'),
+    path('edit_employee/', edit_employee, name='edit_employee'),
+    path('edit_timestamp/', edit_timestamp, name='edit_timestamp'),
 ]

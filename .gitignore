@@ -167,4 +167,4 @@ docker-compose.prod.yml
 misc.xml
 .idea/
 .python-version
-.py3120
+.py312*
