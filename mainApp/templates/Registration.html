@@ -1,11 +1,11 @@
 <!-- Registration.html -->
-
 <!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ユーザー登録ページ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -96,6 +96,15 @@
         color: #721c24;
       }
     </style>
+    <script>
+      function encryptPassword() {
+        const passwordField = document.getElementById("id_password");
+        if (passwordField.value) {
+          const encryptedPassword = CryptoJS.SHA256(passwordField.value).toString();
+          passwordField.value = encryptedPassword;
+        }
+      }
+    </script>
   </head>
   <body>
     <div class="container">
@@ -109,7 +118,7 @@
       </ul>
       {% endif %}
 
-      <form method="post" action="">
+      <form method="post" action="" onsubmit="encryptPassword()">
         {% csrf_token %}
         {{ form.as_p }}
         <div class="button-group">

@@ -14,6 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+"""
+画面遷移図､URL集:
+https://docs.google.com/document/d/1GoGZs8twXaYwMq4uEY6W7ryWamZTpWFlzd0VrIR81fs/edit
+"""
+
+
 from django.contrib import admin
 from django.urls import path
 from mainApp.views.auth_views import homePage, topPage, logout
@@ -22,11 +28,6 @@ from mainApp.views.attendance_views import edit_timestamp
 from mainApp.views.leave_views import apply_leave, leave_requests, approve_leave
 from mainApp.views.shift_views import upload_shifts
 
-
-"""
-画面遷移図､URL集:
-https://docs.google.com/document/d/1GoGZs8twXaYwMq4uEY6W7ryWamZTpWFlzd0VrIR81fs/edit
-"""
 urlpatterns = [
     path('TerukuniAdmin/', admin.site.urls),
     path('homePage/', homePage, name='homePage'),

@@ -8,6 +8,7 @@ from mainApp.forms import LoginForm
 from mainApp.decorators import custom_login_required
 from mainApp.utils import calculate_hours
 from datetime import datetime
+import hashlib
 
 # カスタムログイン機能を作成
 def homePage(request):
@@ -22,8 +23,9 @@ def homePage(request):
                 # ユーザーが存在するか確認
                 user = User_Master.objects.get(account_id=account)
                 
-                # パスワード認証（ハッシュ化なし、プレーンテキストでチェック）
-                if password == user.password:
+                # パスワード認証（フロントエンドで暗号化されたSHA256ハッシュを使って比較）
+                hashed_password = hashlib.sha256(password.encode()).hexdigest()
+                if hashed_password == user.password:
                     request.session['employee_number'] = user.employee_number  # セッションにemployee_numberを保存
                     return redirect('topPage')
                 else:

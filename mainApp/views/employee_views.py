@@ -1,17 +1,22 @@
 # mainApp/views/employee_views.py
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from mainApp.models import User_Master
 from mainApp.forms import RegisterForm, EmployeeEditForm
 from mainApp.decorators import custom_login_required, manager_required
+import hashlib
 
 # 社員情報登録用
 def registerPage(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            # パスワードをハッシュ化して保存
+            user.password = hashlib.sha256(user.password.encode()).hexdigest()
+            user.save()
+            messages.success(request, 'ユーザー登録が成功しました。')
             return redirect('homePage')
     else:
         form = RegisterForm()

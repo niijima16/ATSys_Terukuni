@@ -55,6 +55,7 @@ class User_Master(models.Model):
             else:
                 self.employee_number = 10000000
 
+        # フロントエンドで暗号化済みのため、ここでのハッシュ化は不要
         super().save(*args, **kwargs)
 
     def get_superiors(self):

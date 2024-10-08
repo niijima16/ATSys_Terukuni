@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログインページ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -113,6 +114,14 @@
       }
     </style>
     <script>
+      function encryptPassword() {
+        const passwordField = document.getElementById("id_password");
+        if (passwordField.value) {
+          const encryptedPassword = CryptoJS.SHA256(passwordField.value).toString();
+          passwordField.value = encryptedPassword;
+        }
+      }
+
       function showForgotPasswordPopup() {
         alert("パスワードを忘れた場合は、上長へ連絡してください。");
       }
@@ -126,7 +135,7 @@
         <p>{{ error_message }}</p>
         {% endif %}
       </div>
-      <form method="post" action="">
+      <form method="post" action="" onsubmit="encryptPassword()">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">ログイン</button>
