@@ -1,0 +1,9 @@
+{% extends "base.html" %} {% block title %}シフトアップロード{% endblock %} {% block content %}
+<h1>Excelファイルからシフトをアップロード</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" aria-label="Upload Excel File">アップロード</button>
+</form>
+{% endblock %}

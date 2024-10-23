@@ -1,0 +1,23 @@
+<!-- leave_requests.html -->
+{% extends "base.html" %}
+
+{% block title %}承認リクエスト一覧{% endblock %}
+
+{% block content %}
+<h2>承認リクエスト一覧</h2>
+
+{% if leave_requests %}
+  <ul>
+    {% for leave_request in leave_requests %}
+      <li>
+        <a href="{% url 'approve_leave' leave_request.id %}">
+          {{ leave_request.user.name }}: {{ leave_request.start_date }} から {{ leave_request.end_date }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>未承認のリクエストはありません。</p>
+{% endif %}
+
+{% endblock %}
