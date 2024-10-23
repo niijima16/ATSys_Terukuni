@@ -1,0 +1,28 @@
+<!-- approve_leave.html -->
+
+{% extends "base.html" %}
+
+{% block title %}有給承認{% endblock %}
+
+{% block content %}
+<h2>有給承認</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<p>申請者: {{ leave_request.user.name }}</p>
+<p>申請された日数: {{ leave_request.start_date }} から {{ leave_request.end_date }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }} <!-- フォームのレンダリング -->
+  <button type="submit" class="btn btn-primary">承認する</button>
+</form>
+
+<a href="{% url 'topPage' %}">トップページに戻る</a>
+{% endblock %}
