@@ -1,3 +1,4 @@
+# attendance.py
 from django.db import models
 from django.utils import timezone
 from .user_master import User_Master
