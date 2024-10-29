@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime
 from mainApp.models.user_master import User_Master
 from mainApp.models.time_shift import Shift
 
