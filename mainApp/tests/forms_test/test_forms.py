@@ -8,7 +8,7 @@ from mainApp.models import User_Master, LeaveRequest, TimeStamp
 from io import BytesIO
 
 class FormsTestCase(TestCase):
-
+    # セットアップメソッド：テスト用の初期ユーザーインスタンスを作成
     def setUp(self):
         self.user = User_Master.objects.create(
             account_id='testuser@example.com',
@@ -22,9 +22,10 @@ class FormsTestCase(TestCase):
             position='社員'
         )
         
+    # 登録フォームが有効なデータを受け入れるか確認するテスト
     def test_register_form_valid(self):
         form_data = {
-            'account_id': 'newuser@example.com',  # Updated to a valid email address
+            'account_id': 'newuser@example.com',  # 有効なメールアドレス
             'password': 'SecurePassword123!',
             'name': 'New User',
             'age': 25,
@@ -32,13 +33,14 @@ class FormsTestCase(TestCase):
             'phone_number': '0987654321',
             'joined': timezone.now().date(),
             'department_name': 'Test Department',
-            'position': '社員'  # Updated to valid choice
+            'position': '社員'  # 有効な役職の選択肢
         }
         form = RegisterForm(data=form_data)
         if not form.is_valid():
-            self.fail(f"RegisterForm validation failed: {form.errors}")
+            self.fail(f"RegisterFormのバリデーションに失敗しました: {form.errors}")
         self.assertTrue(form.is_valid())
 
+    # ログインフォームが有効なユーザー資格情報で機能するか確認するテスト
     def test_login_form_valid(self):
         form_data = {
             'user_id': 'testuser',
@@ -47,25 +49,28 @@ class FormsTestCase(TestCase):
         form = LoginForm(data=form_data)
         self.assertTrue(form.is_valid())
 
+    # シフトアップロードフォームが有効なCSVファイルを受け入れるか確認するテスト
     def test_shift_upload_form_valid(self):
         form_data = {}
-        file_mock = SimpleUploadedFile('dummy.csv', b"dummy data for csv", content_type='text/csv')  # Use SimpleUploadedFile for testing
+        file_mock = SimpleUploadedFile('dummy.csv', b"dummy data for csv", content_type='text/csv')  # テスト用にSimpleUploadedFileを使用
         form = ShiftUploadForm(data=form_data, files={'csv_file': file_mock})
         if not form.is_valid():
-            self.fail(f"ShiftUploadForm validation failed: {form.errors}")
+            self.fail(f"ShiftUploadFormのバリデーションに失敗しました: {form.errors}")
         self.assertTrue(form.is_valid())
 
+    # 休暇申請フォームが開始日が終了日より後の場合に失敗するか確認するテスト
     def test_leave_request_form_invalid_dates(self):
         form_data = {
-            'leave_type': 1,  # Assuming `leave_type` is a ForeignKey or ChoiceField that expects an integer
+            'leave_type': 1,  # `leave_type` が整数を期待するForeignKeyまたはChoiceFieldであると仮定
             'start_date': timezone.now().date(),
-            'end_date': timezone.now().date() - timezone.timedelta(days=1),
+            'end_date': timezone.now().date() - timezone.timedelta(days=1),  # 終了日が開始日より前
             'applicant_comment': 'Need leave'
         }
         form = LeaveRequestForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn('__all__', form.errors)
+        self.assertIn('__all__', form.errors)  # 日付バリデーションのためのフィールド外エラーを期待
 
+    # 自分自身の情報を編集する場合にフィールドが正しく無効化されているか確認するテスト
     def test_employee_edit_form_self_edit(self):
         form = EmployeeEditForm(instance=self.user, is_self=True)
         self.assertTrue(form.fields['account_id'].disabled)
@@ -73,6 +78,7 @@ class FormsTestCase(TestCase):
         self.assertTrue(form.fields['department_name'].disabled)
         self.assertTrue(form.fields['position'].disabled)
 
+    # 上司が他の従業員の情報を編集する場合にフィールドが正しく無効化されているか確認するテスト
     def test_employee_edit_form_superior_edit(self):
         form = EmployeeEditForm(instance=self.user, is_superior=True)
         self.assertTrue(form.fields['account_id'].disabled)
@@ -80,6 +86,7 @@ class FormsTestCase(TestCase):
         self.assertTrue(form.fields['department_name'].disabled)
         self.assertTrue(form.fields['position'].disabled)
 
+    # 従業員が自分自身のタイムスタンプ情報を編集できないことを確認するテスト
     def test_timestamp_edit_form_self_edit(self):
         timestamp = TimeStamp.objects.create(
             user=self.user,
@@ -90,6 +97,7 @@ class FormsTestCase(TestCase):
         self.assertTrue(form.fields['clock_in_time'].disabled)
         self.assertTrue(form.fields['clock_out_time'].disabled)
 
+    # マネージャーが従業員のタイムスタンプ情報を編集できることを確認するテスト
     def test_timestamp_edit_form_manager_edit(self):
         timestamp = TimeStamp.objects.create(
             user=self.user,

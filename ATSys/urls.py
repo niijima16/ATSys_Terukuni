@@ -40,4 +40,5 @@ urlpatterns = [
     path('approve_leave/<int:leave_request_id>/', approve_leave, name='approve_leave'),
     path('edit_employee/', edit_employee, name='edit_employee'),
     path('edit_timestamp/', edit_timestamp, name='edit_timestamp'),
+
 ]
