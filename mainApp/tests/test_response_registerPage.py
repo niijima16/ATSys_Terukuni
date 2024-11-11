@@ -1,64 +1,44 @@
-from django.test import TestCase
+from .test_Func_user_and_login_pkg import BaseTestCase
 from django.urls import reverse
 from mainApp.models import User_Master
-import hashlib
 
-class RegisterPageTests(TestCase):
+class RegisterPageTests(BaseTestCase):
     """
     登録ページのレスポンスやテンプレートを検証するテストケース。
     """
-
-    def setUp(self):
-        """
-        テストの準備としてカスタマイズしたユーザーを作成し、ログインを行う。
-        """
-        # User_Masterモデルのユーザー作成
-        self.user = User_Master.objects.create(
-            account_id='test01@test.com',  # ログイン用のID
-            password=hashlib.sha256('asdqwe'.encode()).hexdigest(),  # ハッシュ化されたパスワード
-            name='Test User',
-            age=30,
-            gender='M',
-            phone_number='1234567890',
-            joined='2023-01-01',
-            department_name='開発部',
-            position='社員'
-        )
-
-    def login_and_access_register_page(self):
-        """
-        ログイン後、homePageからregisterPageへの遷移を確認する。
-        """
-        # ハッシュ化したパスワードでログイン
-        login_url = reverse('homePage')
-        hashed_password = hashlib.sha256('asdqwe'.encode()).hexdigest()
-        self.client.post(login_url, {
-            'account_id': 'test01@test.com',
-            'password': hashed_password
-        })
-
-        # homePageからregisterPageに遷移
-        response = self.client.get(reverse('registerPage'))
-        return response
 
     def test_register_page_status_code(self):
         """
         registerPageが正常に200ステータスコードを返すかを確認するテスト。
         """
-        response = self.login_and_access_register_page()
+        # registerPageにアクセス
+        response = self.client.get(reverse('registerPage'))
         self.assertEqual(response.status_code, 200)
 
     def test_register_page_template_used(self):
         """
-        registerPageが正しいテンプレート('registerPage.html')を使用しているかを確認するテスト。
+        registerPageが正しいテンプレート('Registration.html')を使用しているかを確認するテスト。
         """
-        response = self.login_and_access_register_page()
-        self.assertTemplateUsed(response, 'registerPage.html')
+        # registerPageにアクセス
+        response = self.client.get(reverse('registerPage'))
+        self.assertTemplateUsed(response, 'Registration.html')
 
     def test_register_page_content(self):
         """
-        registerPageに必要なコンテンツが含まれているかを確認するテスト。
+        registerPageにUser_Masterの内容が含まれているかを確認するテスト。
         """
-        response = self.login_and_access_register_page()
-        self.assertContains(response, "新規社員アカウント登録")
+        # registerPageにアクセス
+        response = self.client.get(reverse('registerPage'))
+        
+        # ページに表示される各フィールドの確認
+        self.assertContains(response, "ユーザー登録")
         self.assertContains(response, "登録")
+        self.assertContains(response, "Account id")
+        self.assertContains(response, "Password")
+        self.assertContains(response, "Name")
+        self.assertContains(response, "Age")
+        self.assertContains(response, "Gender")
+        self.assertContains(response, "Phone number")
+        self.assertContains(response, "Joined")
+        self.assertContains(response, "Department name")
+        self.assertContains(response, "Position")
