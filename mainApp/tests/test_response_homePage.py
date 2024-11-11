@@ -9,7 +9,6 @@ class HomePageTests(TestCase):
     def test_home_page_status_code(self):
         """
         ホームページが正常に200ステータスコードを返すかを確認するテスト。
-        これはページが正しく読み込まれていることを示す。
         """
         response = self.client.get(reverse('homePage'))
         self.assertEqual(response.status_code, 200)
@@ -25,8 +24,6 @@ class HomePageTests(TestCase):
     def test_home_page_content(self):
         """
         ホームページに必要なコンテンツが含まれているかを確認するテスト。
-        "ログイン", "新規社員アカウント登録", "パスワードをお忘れですか？"などの
-        UI要素が正しく表示されているかをチェックする。
         """
         response = self.client.get(reverse('homePage'))
         self.assertContains(response, "ログイン")  # ログイン見出しの確認
