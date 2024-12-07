@@ -1,5 +1,4 @@
 # admin.py
-
 from django.contrib import admin
 from mainApp.models.user_master import User_Master
 from mainApp.models.leave_type import LeaveType
@@ -8,16 +7,19 @@ from mainApp.models.time_shift import Shift
 from mainApp.models.leave_request import LeaveRequest
 from mainApp.models.paid_leave import PaidLeave
 
+
 @admin.register(User_Master)
 class UserMasterAdmin(admin.ModelAdmin):
     list_display = ('employee_number', 'name', 'account_id', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position')
     search_fields = ('employee_number', 'name', 'account_id', 'phone_number')
     list_filter = ('gender', 'position')
 
+
 @admin.register(LeaveType)
 class LeaveTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
     search_fields = ('name',)
+
 
 @admin.register(TimeStamp)
 class TimeSheetAdmin(admin.ModelAdmin):
@@ -28,6 +30,7 @@ class TimeSheetAdmin(admin.ModelAdmin):
         return obj.calculate_worked_hours()
     worked_hours.short_description = 'Worked Hours'
 
+
 @admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
     list_display = ('get_employee_number', 'user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
@@ -37,6 +40,7 @@ class ShiftAdmin(admin.ModelAdmin):
     def get_employee_number(self, obj):
         return obj.user.employee_number
     get_employee_number.short_description = 'Employee Number'
+
 
 @admin.register(PaidLeave)
 class PaidLeaveAdmin(admin.ModelAdmin):
@@ -50,4 +54,17 @@ class PaidLeaveAdmin(admin.ModelAdmin):
         return obj.user.name
     get_name.short_description = 'Name'
 
-admin.site.register(LeaveRequest)
+
+@admin.register(LeaveRequest)
+class LeaveRequestAdmin(admin.ModelAdmin):
+    list_display = ('get_employee_number', 'get_user_name', 'leave_type', 'start_date', 'end_date', 'approved', 'applicant_comment', 'approver_comment')
+    list_filter = ('approved', 'leave_type', 'start_date', 'end_date')
+    search_fields = ('user__name', 'user__employee_number', 'leave_type')
+
+    def get_employee_number(self, obj):
+        return obj.user.employee_number
+    get_employee_number.short_description = 'Employee Number'
+
+    def get_user_name(self, obj):
+        return obj.user.name
+    get_user_name.short_description = 'Name'

@@ -58,7 +58,7 @@ def edit_employee(request):
         if form.is_valid():
             form.save()
             messages.success(request, '社員情報が更新されました。')
-            return redirect('topPage')
+
     else:
         form = EmployeeEditForm(instance=employee, is_self=is_self, is_manager=is_manager, is_superior=is_superior)
 

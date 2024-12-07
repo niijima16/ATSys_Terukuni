@@ -5,56 +5,203 @@
 {% block title %}トップページ{% endblock %}
 
 {% block content %}
+<style>
+    /* 全体のコンテナ */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+  
+    /* 勤怠ボタンのスタイル */
+    .attendance-buttons {
+      display: flex;
+      justify-content: space-between; /* 左右に配置 */
+      align-items: center;
+      gap: 20px; /* ボタン間のスペース */
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  
+    /* ボタンの共通スタイル */
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 5px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      border: none;
+    }
+  
+    /* 出勤ボタン */
+    .btn-success {
+      background-color: #28a745;
+    }
+  
+    .btn-success:hover {
+      background-color: #218838;
+    }
+  
+    /* 退勤ボタン */
+    .btn-danger {
+      background-color: #dc3545;
+    }
+  
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+  
+    /* ボタンのクリックアニメーション */
+    .btn:active {
+      transform: scale(0.95);
+    }
+  
+    /* 日付選択フォーム */
+    .date-picker {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  
+    .date-picker form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      align-items: center;
+    }
+  
+    .date-picker input[type="date"] {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  
+    .date-picker input[type="submit"] {
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background-color 0.3s;
+    }
+  
+    .date-picker input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+  
+    /* 情報セクションのグリッドレイアウト */
+    .grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+  
+    /* 各情報カード */
+    .card {
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+  
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+  
+    .card p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #555;
+    }
+  
+    /* ヘッダーの中央揃え */
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+</style>
+  
 <div class="container">
     <h2>トップページ</h2>
-    <div>
-        <form method="get" action="" class="form-group">
+
+    <!-- 勤怠ボタン -->
+    <div class="attendance-buttons">
+        <form method="post" action="">
+            {% csrf_token %}
+            <button type="submit" name="clock_in" class="btn btn-success">出勤</button>
+        </form>
+        <form method="post" action="">
+            {% csrf_token %}
+            <button type="submit" name="clock_out" class="btn btn-danger">退勤</button>
+        </form>
+    </div>
+
+    <!-- 日付選択フォーム -->
+    <div class="date-picker">
+        <form method="get" action="">
             <label for="date">表示する日付を選択してください:</label>
             <input type="date" id="date" name="date" value="{{ selected_date }}" max="{{ today_date }}" />
             <input type="submit" value="表示" />
         </form>
     </div>
 
-    <div class="section">
-        <h2>今日の勤務時間</h2>
-        <p>勤務時間: {{ today_worked_hours }} 時間</p>
-        <p>残業時間: {{ today_overtime_hours }} 時間</p>
-        <p>早退時間: {{ today_early_leave_hours }} 時間</p>
-        <p>遅刻時間: {{ today_late_arrival_hours }} 時間</p>
-    </div>
+    <!-- 情報カード -->
+    <div class="grid-layout">
+        <div class="card">
+            <h2>今日の勤務時間</h2>
+            <p>勤務時間: {{ today_worked_hours }} 時間</p>
+            <p>残業時間: {{ today_overtime_hours }} 時間</p>
+            <p>早退時間: {{ today_early_leave_hours }} 時間</p>
+            <p>遅刻時間: {{ today_late_arrival_hours }} 時間</p>
+        </div>
 
-    <div class="section">
-        <h2>選択した日付の勤務情報</h2>
-        <p>勤務時間: {{ selected_day_worked_hours }} 時間</p>
-        <p>残業時間: {{ selected_day_overtime_hours }} 時間</p>
-        <p>早退時間: {{ selected_day_early_leave_hours }} 時間</p>
-        <p>遅刻時間: {{ selected_day_late_arrival_hours }} 時間</p>
-    </div>
+        <div class="card">
+            <h2>選択した日付の勤務情報</h2>
+            <p>勤務時間: {{ selected_day_worked_hours }} 時間</p>
+            <p>残業時間: {{ selected_day_overtime_hours }} 時間</p>
+            <p>早退時間: {{ selected_day_early_leave_hours }} 時間</p>
+            <p>遅刻時間: {{ selected_day_late_arrival_hours }} 時間</p>
+        </div>
 
-    <div class="section">
-        <h2>今月の勤務情報</h2>
-        <p>勤務時間: {{ total_worked_hours }} 時間</p>
-        <p>合計残業時間: {{ total_overtime_hours }} 時間</p>
-        <p>合計早退時間: {{ total_early_leave_hours }} 時間</p>
-        <p>合計遅刻時間: {{ total_late_arrival_hours }} 時間</p>
-    </div>
+        <div class="card">
+            <h2>今月の勤務情報</h2>
+            <p>勤務時間: {{ total_worked_hours }} 時間</p>
+            <p>合計残業時間: {{ total_overtime_hours }} 時間</p>
+            <p>合計早退時間: {{ total_early_leave_hours }} 時間</p>
+            <p>合計遅刻時間: {{ total_late_arrival_hours }} 時間</p>
+        </div>
 
-    {% if paid_leave %}
-    <div class="section">
-        <h2>有給休暇情報</h2>
-        <p>残り有給日数: {{ paid_leave.remaining_days }} 日</p>
-    </div>
-    {% endif %}
-
-    <div class="form-group">
-        <form method="post" action="">
-            {% csrf_token %}
-            <input type="submit" name="clock_in" value="出勤" class="clock-in" />
-        </form>
-        <form method="post" action="">
-            {% csrf_token %}
-            <input type="submit" name="clock_out" value="退勤" class="clock-out" />
-        </form>
+        {% if paid_leave %}
+        <div class="card">
+            <h2>有給休暇情報</h2>
+            <p>残り有給日数: {{ paid_leave.remaining_days }} 日</p>
+        </div>
+        {% endif %}
     </div>
 </div>
+
 {% endblock %}
+

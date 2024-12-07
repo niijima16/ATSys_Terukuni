@@ -16,20 +16,21 @@ def upload_shifts(request):
             decoded_file = csv_file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             updated_shifts = 0  # 更新されたシフトの数をカウント
+            failed_rows = []  # 失敗した行のリスト
 
             for row in reader:
                 try:
                     user = User_Master.objects.get(employee_number=row['employee_number'])
-                    
+
                     # CSVの日付フォーマット 'YYYY/MM/DD' を 'YYYY-MM-DD' に変換
-                    date = datetime.strptime(row['date'], '%Y/%m/%d').date()  # ここでフォーマットを修正
+                    date = datetime.strptime(row['date'], '%Y/%m/%d').date()
                     start_time = row['start_time'] if row['start_time'] else None
                     end_time = row['end_time'] if row['end_time'] else None
-                    
+
                     break_time_str = row['break_time'] if row['break_time'] else '0:00:00'
                     (hours, minutes, seconds) = map(int, break_time_str.split(':'))
                     break_time = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-                    
+
                     # 既存のシフトを確認し、更新または作成
                     shift, created = Shift.objects.update_or_create(
                         user=user,
@@ -40,18 +41,22 @@ def upload_shifts(request):
                             'break_time': break_time,
                         }
                     )
-                    if created:
-                        updated_shifts += 1
+                    updated_shifts += 1
 
                 except User_Master.DoesNotExist:
-                    messages.error(request, f"ユーザー {row['employee_number']} が見つかりません。")
+                    failed_rows.append(f"社員番号 {row['employee_number']} のユーザーが見つかりません。")
                     continue
                 except ValueError as e:
-                    messages.error(request, f"エラーが発生しました: {str(e)}")
+                    failed_rows.append(f"行エラー: {str(e)}（データ: {row}）")
                     continue
 
-            # アップロード成功のメッセージを追加
-            messages.success(request, f'{updated_shifts} 件のシフトが正常にアップロードされました。')
+            # 成功メッセージを設定
+            if updated_shifts > 0:
+                messages.success(request, f'{updated_shifts} 件のシフトが正常にアップロードされました。')
+
+            # 失敗メッセージを設定
+            if failed_rows:
+                messages.error(request, f"{len(failed_rows)} 件のシフトが失敗しました。詳細: " + " | ".join(failed_rows))
 
             return redirect('upload_shifts')  # アップロードページにリダイレクト
 

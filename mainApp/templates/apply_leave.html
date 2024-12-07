@@ -1,23 +1,58 @@
 <!-- apply_leave.html -->
 
 {% extends "base.html" %} 
+
 {% block title %}有給申請{% endblock %} 
+
 {% block content %}
-<h2>有給申請</h2>
+<div class="container">
+  <h2>有給申請</h2>
 
-{% if messages %} 
-  {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-      {{ message }}
+  {% if messages %} 
+    <div class="alert-container">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %} 
     </div>
-  {% endfor %} 
-{% endif %}
+  {% endif %}
 
-<form method="post">
-  {% csrf_token %} 
-  {{ form.as_p }} <!-- 申請者のコメントも含む -->
-  <button type="submit" class="btn btn-primary">申請する</button>
-</form>
+  <!-- 有給申請フォーム -->
+  <form method="post" class="leave-form">
+    {% csrf_token %} 
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">申請する</button>
+  </form>
 
-<a href="{% url 'topPage' %}">トップページに戻る</a>
+  <hr class="divider">
+
+  <!-- 未承認の申請一覧 -->
+  <h3>未承認の申請</h3>
+  {% if pending_requests %}
+    <ul class="pending-requests">
+      {% for request in pending_requests %}
+        <li class="pending-request-item">
+          <div>
+            <strong>{{ request.start_date }} から {{ request.end_date }}</strong>
+            ({{ request.get_leave_type_display }})
+            <br>
+            <span class="comment"><strong>申請コメント:</strong> {{ request.applicant_comment|default:"なし" }}</span>
+          </div>
+          <form method="post" class="withdraw-form">
+            {% csrf_token %}
+            <input type="hidden" name="leave_request_id" value="{{ request.id }}">
+            <button type="submit" name="withdraw" class="btn btn-danger btn-small">取り下げる</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>未承認の申請はありません。</p>
+  {% endif %}
+
+  <a href="{% url 'topPage' %}" class="btn btn-secondary">トップページに戻る</a>
+</div>
 {% endblock %}
+
+
