@@ -9,40 +9,39 @@ class RegisterForm(forms.ModelForm):
         model = User_Master
         fields = ['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
         widgets = {
-            'account_id': forms.TextInput(attrs={
-                'placeholder': '例: tanaka@levels.com',
-                'class': 'form-control'
+            'account_id': forms.EmailInput(attrs={
+                'placeholder': '例: user@example.com',
+                'class': 'form-control',
             }),
             'password': forms.PasswordInput(attrs={
                 'placeholder': '8文字以上のパスワード',
-                'class': 'form-control'
+                'class': 'form-control',
             }),
             'name': forms.TextInput(attrs={
                 'placeholder': '例: 山田 太郎',
-                'class': 'form-control'
+                'class': 'form-control',
             }),
             'age': forms.NumberInput(attrs={
                 'placeholder': '例: 30',
-                'class': 'form-control'
+                'class': 'form-control',
             }),
             'gender': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'form-control',
             }),
             'phone_number': forms.TextInput(attrs={
-                'placeholder': '例: 090-1234-5678',
-                'class': 'form-control'
+                'placeholder': '例: 09012345678',
+                'class': 'form-control',
             }),
             'joined': forms.DateInput(attrs={
                 'type': 'date',
-                'class': 'form-control'
+                'class': 'form-control',
             }),
             'department_name': forms.TextInput(attrs={
                 'placeholder': '例: 営業部',
-                'class': 'form-control'
+                'class': 'form-control',
             }),
-            'position': forms.TextInput(attrs={
-                'placeholder': '例: マネージャー',
-                'class': 'form-control'
+            'position': forms.Select(attrs={
+                'class': 'form-control',
             }),
         }
 
