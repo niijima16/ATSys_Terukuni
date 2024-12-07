@@ -137,7 +137,20 @@
       </div>
       <form method="post" action="" onsubmit="encryptPassword()">
         {% csrf_token %}
-        {{ form.as_p }}
+        <input
+          type="text"
+          name="user_id"
+          id="id_user_id"
+          placeholder="ユーザーID(e-mail)を入力してください"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="id_password"
+          placeholder="パスワードを入力してください"
+          required
+        />
         <button type="submit">ログイン</button>
       </form>
       <a href="{% url 'registerPage' %}">新規社員アカウント登録</a>

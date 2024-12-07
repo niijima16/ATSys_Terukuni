@@ -3,15 +3,50 @@
 from django import forms
 from .models import User_Master, LeaveRequest, TimeStamp
 
+# 登録用forms(ヒント付き)
 class RegisterForm(forms.ModelForm):
     class Meta:
         model = User_Master
         fields = ['account_id', 'password', 'name', 'age', 'gender', 'phone_number', 'joined', 'department_name', 'position']
         widgets = {
-            'password': forms.PasswordInput(),
-            'joined': forms.DateInput(attrs={'type': 'date'}),
+            'account_id': forms.TextInput(attrs={
+                'placeholder': '例: tanaka@levels.com',
+                'class': 'form-control'
+            }),
+            'password': forms.PasswordInput(attrs={
+                'placeholder': '8文字以上のパスワード',
+                'class': 'form-control'
+            }),
+            'name': forms.TextInput(attrs={
+                'placeholder': '例: 山田 太郎',
+                'class': 'form-control'
+            }),
+            'age': forms.NumberInput(attrs={
+                'placeholder': '例: 30',
+                'class': 'form-control'
+            }),
+            'gender': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'placeholder': '例: 090-1234-5678',
+                'class': 'form-control'
+            }),
+            'joined': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'department_name': forms.TextInput(attrs={
+                'placeholder': '例: 営業部',
+                'class': 'form-control'
+            }),
+            'position': forms.TextInput(attrs={
+                'placeholder': '例: マネージャー',
+                'class': 'form-control'
+            }),
         }
 
+# ログイン用
 class LoginForm(forms.Form):
     user_id = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput())
