@@ -1,4 +1,3 @@
-<!-- homePage.html -->
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -40,6 +39,13 @@
         gap: 15px;
       }
 
+      label {
+        text-align: left;
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 5px;
+      }
+
       input[type="text"],
       input[type="password"] {
         padding: 12px;
@@ -71,6 +77,23 @@
 
       button:hover {
         background-color: #0056b3;
+      }
+      
+      /* ログアウトメッセージ */
+      .messages {
+        list-style-type: none;
+        padding: 0;
+        margin: 20px 0;
+      }
+      .messages li {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        text-align: center;
+        color: #155724; /* テキストカラーを設定 */
+        background-color: #d4edda; /* 背景色を設定 */
+        border: 1px solid #c3e6cb; /* 枠線を設定 */
       }
 
       #message p {
@@ -131,12 +154,19 @@
     <div class="container">
       <h1>ログイン</h1>
       <div id="message">
-        {% if error_message %}
-        <p>{{ error_message }}</p>
-        {% endif %}
+        {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+          <li class="{{ message.tags }}">
+            {{ message }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}        
       </div>
       <form method="post" action="" onsubmit="encryptPassword()">
         {% csrf_token %}
+        <label for="id_user_id">ID:</label>
         <input
           type="text"
           name="user_id"
@@ -144,6 +174,7 @@
           placeholder="ユーザーID(e-mail)を入力してください"
           required
         />
+        <label for="id_password">パスワード:</label>
         <input
           type="password"
           name="password"

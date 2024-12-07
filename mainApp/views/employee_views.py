@@ -17,10 +17,11 @@ def registerPage(request):
             user.password = hashlib.sha256(user.password.encode()).hexdigest()
             user.save()
             messages.success(request, 'ユーザー登録が成功しました。')
-            return redirect('homePage')
+            # 登録成功フラグをテンプレートに渡す
+            return render(request, 'Registration.html', {'form': RegisterForm(), 'success': True})
     else:
         form = RegisterForm()
-    return render(request, 'Registration.html', {'form': form})
+    return render(request, 'Registration.html', {'form': form, 'success': False})
 
 # 情報編集用
 @custom_login_required

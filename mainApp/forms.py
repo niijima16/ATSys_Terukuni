@@ -14,7 +14,7 @@ class RegisterForm(forms.ModelForm):
                 'class': 'form-control',
             }),
             'password': forms.PasswordInput(attrs={
-                'placeholder': '8文字以上のパスワード',
+                'placeholder': '8文字以上、英数字と特殊文字(@#$%^&+=)を含むパスワード',
                 'class': 'form-control',
             }),
             'name': forms.TextInput(attrs={

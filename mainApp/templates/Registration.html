@@ -1,4 +1,3 @@
-<!-- Registration.html -->
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -7,6 +6,7 @@
     <title>ユーザー登録ページ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
+      /* 前述のスタイルをそのまま使用 */
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -95,6 +95,13 @@
         background-color: #f8d7da;
         color: #721c24;
       }
+      .error-message {
+        color: #d9534f;
+        font-size: 14px;
+        margin-top: -10px;
+        margin-bottom: 10px;
+        display: none;
+      }
     </style>
     <script>
       function encryptPassword() {
@@ -104,11 +111,22 @@
           passwordField.value = encryptedPassword;
         }
       }
+
+      function showSuccessPopupAndRedirect() {
+        alert("ユーザー登録が成功しました。");
+        window.location.href = "{% url 'homePage' %}";
+      }
     </script>
   </head>
   <body>
     <div class="container">
       <h1>ユーザー登録</h1>
+
+      {% if success %}
+      <script>
+        showSuccessPopupAndRedirect();
+      </script>
+      {% endif %}
 
       {% if messages %}
       <ul class="messages">
