@@ -6,7 +6,6 @@
     <title>ユーザー登録ページ</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-      /* 前述のスタイルをそのまま使用 */
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -76,45 +75,59 @@
         display: flex;
         justify-content: space-between;
       }
-      .messages {
-        margin-bottom: 15px;
-        padding: 10px;
-        border-radius: 5px;
-      }
-      .messages li {
-        list-style-type: none;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-      }
-      .success {
-        background-color: #d4edda;
-        color: #155724;
-      }
-      .error {
-        background-color: #f8d7da;
-        color: #721c24;
-      }
       .error-message {
         color: #d9534f;
         font-size: 14px;
-        margin-top: -10px;
         margin-bottom: 10px;
         display: none;
       }
     </style>
     <script>
-      function encryptPassword() {
+      function validatePassword() {
         const passwordField = document.getElementById("id_password");
-        if (passwordField.value) {
-          const encryptedPassword = CryptoJS.SHA256(passwordField.value).toString();
-          passwordField.value = encryptedPassword;
-        }
-      }
+        const errorMessage = document.getElementById("password-error");
+        const password = passwordField.value;
 
-      function showSuccessPopupAndRedirect() {
-        alert("ユーザー登録が成功しました。");
-        window.location.href = "{% url 'homePage' %}";
+        // バリデーション条件
+        const hasMinLength = password.length >= 8;
+        const hasLetter = /[A-Za-z]/.test(password);
+        const hasDigit = /\d/.test(password);
+        const hasSpecialChar = /[@!_+]/.test(password);
+        const isValidChar = /^[A-Za-z\d@!_+]+$/.test(password);
+
+        // バリデーションチェック
+        if (!hasMinLength) {
+          errorMessage.textContent = "パスワードは8文字以上である必要があります。";
+          errorMessage.style.display = "block";
+          return false;
+        }
+        if (!hasLetter) {
+          errorMessage.textContent = "パスワードには少なくとも1つの英字を含める必要があります。";
+          errorMessage.style.display = "block";
+          return false;
+        }
+        if (!hasDigit) {
+          errorMessage.textContent = "パスワードには少なくとも1つの数字を含める必要があります。";
+          errorMessage.style.display = "block";
+          return false;
+        }
+        if (!hasSpecialChar) {
+          errorMessage.textContent = "パスワードには @, !, _, + のいずれかの特殊文字を含める必要があります。";
+          errorMessage.style.display = "block";
+          return false;
+        }
+        if (!isValidChar) {
+          errorMessage.textContent = "使用できない文字が含まれています。";
+          errorMessage.style.display = "block";
+          return false;
+        }
+
+        // 暗号化プロセス
+        const encryptedPassword = CryptoJS.SHA256(password).toString();
+        passwordField.value = encryptedPassword;
+
+        errorMessage.style.display = "none";
+        return true;
       }
     </script>
   </head>
@@ -122,23 +135,10 @@
     <div class="container">
       <h1>ユーザー登録</h1>
 
-      {% if success %}
-      <script>
-        showSuccessPopupAndRedirect();
-      </script>
-      {% endif %}
-
-      {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-        <li class="{{ message.tags }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-      {% endif %}
-
-      <form method="post" action="" onsubmit="encryptPassword()">
+      <form method="post" action="" onsubmit="return validatePassword()">
         {% csrf_token %}
         {{ form.as_p }}
+        <span id="password-error" class="error-message"></span>
         <div class="button-group">
           <input type="submit" value="登録" />
           <input type="button" value="戻る" onclick="history.back()" />

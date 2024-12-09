@@ -13,15 +13,14 @@ def registerPage(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            # パスワードをハッシュ化して保存
+            # パスワードを暗号化して保存
             user.password = hashlib.sha256(user.password.encode()).hexdigest()
             user.save()
             messages.success(request, 'ユーザー登録が成功しました。')
-            # 登録成功フラグをテンプレートに渡す
-            return render(request, 'Registration.html', {'form': RegisterForm(), 'success': True})
+            return redirect('homePage')
     else:
         form = RegisterForm()
-    return render(request, 'Registration.html', {'form': form, 'success': False})
+    return render(request, 'Registration.html', {'form': form})
 
 # 情報編集用
 @custom_login_required

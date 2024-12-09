@@ -19,38 +19,25 @@ def homePage(request):
         if form.is_valid():
             account = form.cleaned_data['user_id']
             password = form.cleaned_data['password']
+            encrypted_password = hashlib.sha256(password.encode()).hexdigest()  # 入力されたパスワードを暗号化
+
             try:
                 # ユーザーが存在するか確認
                 user = User_Master.objects.get(account_id=account)
-                
-                # パスワード認証（フロントエンドで暗号化されたSHA256ハッシュを使って比較）
-                hashed_password = hashlib.sha256(password.encode()).hexdigest()
-                if hashed_password == user.password:
-                    request.session['employee_number'] = user.employee_number  # セッションにemployee_numberを保存
+
+                # データベース内の暗号化済みパスワードと比較
+                if encrypted_password == user.password:
+                    request.session['employee_number'] = user.employee_number  # セッションに employee_number を保存
                     return redirect('topPage')
                 else:
                     error_message = 'パスワードが正しくありません。'
             except User_Master.DoesNotExist:
                 error_message = 'アカウントが見つかりません。'
-    
-    # セッションから employee_number を取得
-    employee_number = request.session.get('employee_number')
-    user_name = None
-
-    if employee_number:
-        try:
-            user = User_Master.objects.get(employee_number=employee_number)
-            user_name = user.name
-        except User_Master.DoesNotExist:
-            pass
 
     context = {
         'form': form,
         'error_message': error_message,
-        'employee_number': employee_number,
-        'user_name': user_name,
     }
-
     return render(request, 'HomePage.html', context)
 
 # トップページ用

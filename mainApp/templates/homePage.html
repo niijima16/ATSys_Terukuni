@@ -138,10 +138,10 @@
     </style>
     <script>
       function encryptPassword() {
-        const passwordField = document.getElementById("id_password");
-        if (passwordField.value) {
-          const encryptedPassword = CryptoJS.SHA256(passwordField.value).toString();
-          passwordField.value = encryptedPassword;
+      const passwordField = document.getElementById("id_password");
+      if (passwordField.value) {
+        const encryptedPassword = CryptoJS.SHA256(passwordField.value).toString();
+        passwordField.value = encryptedPassword;
         }
       }
 

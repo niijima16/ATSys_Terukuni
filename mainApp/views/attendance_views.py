@@ -1,12 +1,10 @@
 # mainApp/views/attendance_views.py
-
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib import messages
 from mainApp.models import User_Master, TimeStamp
 from mainApp.forms import TimeStampEditForm
 from mainApp.decorators import custom_login_required, manager_required
 
-# 勤怠情報編集用
 @custom_login_required
 @manager_required
 def edit_timestamp(request):
@@ -33,7 +31,7 @@ def edit_timestamp(request):
     position_hierarchy = ['社員', 'リーダー', 'マネージャー', '課長', '部長', '取締役', '社長']
     manager_position_index = position_hierarchy.index(manager.position)
     employee_position_index = position_hierarchy.index(employee.position)
-    
+
     is_superior = (employee_position_index > manager_position_index)
 
     if is_superior and not is_self:
@@ -48,7 +46,7 @@ def edit_timestamp(request):
         if form.is_valid():
             form.save()
             messages.success(request, '勤怠情報が更新されました。')
-            return redirect('topPage')
+            # リダイレクトせずにそのままページに留まる
     else:
         form = TimeStampEditForm(instance=timestamp, is_self=is_self, is_manager=is_manager)
 

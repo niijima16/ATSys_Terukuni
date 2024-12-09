@@ -1,5 +1,5 @@
 # mainApp/forms.py
-
+import re
 from django import forms
 from .models import User_Master, LeaveRequest, TimeStamp
 
@@ -14,7 +14,7 @@ class RegisterForm(forms.ModelForm):
                 'class': 'form-control',
             }),
             'password': forms.PasswordInput(attrs={
-                'placeholder': '8文字以上、英数字と特殊文字(@#$%^&+=)を含むパスワード',
+                'placeholder': '8文字以上、英数字と特殊文字(@, !, _, !, +)を含むパスワード',
                 'class': 'form-control',
             }),
             'name': forms.TextInput(attrs={
@@ -44,6 +44,27 @@ class RegisterForm(forms.ModelForm):
                 'class': 'form-control',
             }),
         }
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+
+        # SHA256 暗号化済みパスワードは許可 (64文字の16進文字列)
+        if len(password) == 64 and re.match(r"^[a-fA-F0-9]{64}$", password):
+            return password
+
+        # 生パスワードのバリデーション
+        if len(password) < 8:
+            raise forms.ValidationError("パスワードは8文字以上である必要があります。")
+        if not re.search(r"[A-Za-z]", password):
+            raise forms.ValidationError("パスワードには少なくとも1つの英字を含める必要があります。")
+        if not re.search(r"\d", password):
+            raise forms.ValidationError("パスワードには少なくとも1つの数字を含める必要があります。")
+        if not re.search(r"[@!_+]", password):
+            raise forms.ValidationError("パスワードには @, !, _, + のいずれかの特殊文字を含める必要があります。")
+        if re.search(r"[^A-Za-z\d@!_+]", password):
+            raise forms.ValidationError("使用できない文字が含まれています。")
+
+        return password
 
 # ログイン用
 class LoginForm(forms.Form):
