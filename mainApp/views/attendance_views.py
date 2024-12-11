@@ -42,13 +42,15 @@ def edit_timestamp(request):
     timestamp = TimeStamp.objects.filter(user=employee).order_by('-clock_in_time').first()
 
     if request.method == 'POST':
-        form = TimeStampEditForm(request.POST, instance=timestamp, is_self=is_self, is_manager=is_manager)
+        form = TimeStampEditForm(request.POST, instance=timestamp)
         if form.is_valid():
-            form.save()
-            messages.success(request, '勤怠情報が更新されました。')
-            # リダイレクトせずにそのままページに留まる
+            if form.has_changed():  # フォームに変更がある場合のみ保存
+                form.save()
+                messages.success(request, '勤怠情報が更新されました。')
+            else:
+                messages.info(request, '変更がありません。')
     else:
-        form = TimeStampEditForm(instance=timestamp, is_self=is_self, is_manager=is_manager)
+        form = TimeStampEditForm(instance=timestamp)
 
     context = {
         'form': form,

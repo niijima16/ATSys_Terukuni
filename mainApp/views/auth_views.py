@@ -2,12 +2,14 @@
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.utils import timezone
+from django.utils.timezone import now
 from mainApp.models import User_Master, PaidLeave, Shift, TimeStamp
 from mainApp.forms import LoginForm
 from mainApp.decorators import custom_login_required
 from mainApp.utils import calculate_hours
 from datetime import datetime
+from django.utils import timezone
+from django.utils.timezone import make_aware, is_aware
 import hashlib
 
 # カスタムログイン機能を作成
@@ -48,22 +50,42 @@ def topPage(request):
 
     # 今日の日付
     today = datetime.today().date()
-    selected_date = request.GET.get('date', today)
-    selected_date = today if selected_date == "" else selected_date
 
-    # 勤務情報の取得
+    # 選択した日付を取得（無効な値の場合は今日の日付を使用）
+    selected_date = request.GET.get('date')
+    if selected_date:
+        try:
+            selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = today
+    else:
+        selected_date = today
+
+    # 今日の勤務情報
     today_shift = Shift.objects.filter(user=user, date=today).first()
     today_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today).first()
+
+    today_worked_hours, today_overtime_hours, today_early_leave_hours, today_late_arrival_hours = calculate_hours(today_shift, today_timestamp)
+
+    # 選択した日付の勤務情報
     selected_shift = Shift.objects.filter(user=user, date=selected_date).first()
     selected_timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=selected_date).first()
 
-    # 勤務情報の計算
-    today_worked_hours, today_overtime_hours, today_early_leave_hours, today_late_arrival_hours = calculate_hours(today_shift, today_timestamp)
     selected_worked_hours, selected_overtime_hours, selected_early_leave_hours, selected_late_arrival_hours = calculate_hours(selected_shift, selected_timestamp)
+
+    selected_day_summary = {
+        'worked_hours': selected_worked_hours,
+        'overtime_hours': selected_overtime_hours,
+        'early_leave_hours': selected_early_leave_hours,
+        'late_arrival_hours': selected_late_arrival_hours,
+    }
 
     # 今月の勤務情報
     month_start = today.replace(day=1)
-    monthly_summary = TimeStamp.get_monthly_summary(user, month_start, today)
+    monthly_summary = TimeStamp.get_monthly_summary(user=user, month_start=month_start, today=today)
+
+    # 勤務時間に残業時間を加えた出力
+    total_worked_hours_with_overtime = monthly_summary['total_worked_hours'] + monthly_summary['total_overtime_hours']
 
     # 有給の取得
     try:
@@ -73,19 +95,18 @@ def topPage(request):
 
     context = {
         'user_name': user.name,
-        'today_worked_hours': today_worked_hours,
-        'today_overtime_hours': today_overtime_hours,
-        'today_early_leave_hours': today_early_leave_hours,
-        'today_late_arrival_hours': today_late_arrival_hours,
+        'today_worked_hours': round(today_worked_hours, 2),
+        'today_overtime_hours': round(today_overtime_hours, 2),
+        'today_early_leave_hours': round(today_early_leave_hours, 2),
+        'today_late_arrival_hours': round(today_late_arrival_hours, 2),
         'selected_date': selected_date,
-        'selected_day_worked_hours': selected_worked_hours,
-        'selected_day_overtime_hours': selected_overtime_hours,
-        'selected_day_early_leave_hours': selected_early_leave_hours,
-        'selected_day_late_arrival_hours': selected_late_arrival_hours,
-        'total_worked_hours': monthly_summary['total_worked_hours'],
-        'total_overtime_hours': monthly_summary['total_overtime_hours'],
-        'total_early_leave_hours': monthly_summary['total_early_leave_hours'],
-        'total_late_arrival_hours': monthly_summary['total_late_arrival_hours'],
+        'selected_day_summary': selected_day_summary,
+        'month_summary': {
+            'total_worked_hours': round(total_worked_hours_with_overtime, 2),
+            'total_overtime_hours': round(monthly_summary['total_overtime_hours'], 2),
+            'total_early_leave_hours': round(monthly_summary['total_early_leave_hours'], 2),
+            'total_late_arrival_hours': round(monthly_summary['total_late_arrival_hours'], 2),
+        },
         'today_date': today,
         'paid_leave': paid_leave,
         'employee_number': employee_number,
@@ -94,7 +115,6 @@ def topPage(request):
     if request.method == 'POST':
         if 'clock_in' in request.POST:
             # 出勤処理
-            today = datetime.today().date()
             existing_entry = TimeStamp.objects.filter(user=user, clock_in_time__date=today, clock_out_time__isnull=True).exists()
             if existing_entry:
                 messages.warning(request, '既に出勤記録があります。')
@@ -104,7 +124,6 @@ def topPage(request):
                 messages.success(request, '出勤が記録されました。')
         elif 'clock_out' in request.POST:
             # 退勤処理
-            today = datetime.today().date()
             timestamp = TimeStamp.objects.filter(user=user, clock_in_time__date=today, clock_out_time__isnull=True).last()
             if timestamp:
                 clock_out_time = timezone.now()
@@ -116,6 +135,8 @@ def topPage(request):
         return redirect('topPage')
 
     return render(request, 'topPage.html', context)
+
+
 
 # ログアウト
 def logout(request):

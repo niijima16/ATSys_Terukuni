@@ -27,11 +27,17 @@
     <p>※ 自分の情報を編集しています。</p>
   {% endif %}
   
-  <form method="post">
+  <form method="post" onsubmit="return confirmUpdate()">
     {% csrf_token %}
-    {{ form.as_p }}  <!-- フォームのフィールドを表示 -->
+    {{ form.as_p }} <!-- フォームのフィールドを表示 -->
     <button type="submit">更新</button>
   </form>
   {% endif %}
 </div>
+
+<script>
+  function confirmUpdate() {
+    return confirm("情報を更新しますか？");
+  }
+</script>
 {% endblock %}

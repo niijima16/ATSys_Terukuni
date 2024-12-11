@@ -82,15 +82,17 @@ class TimeStamp(models.Model):
         """
         指定された月におけるユーザーの合計勤務時間、残業時間、早退時間、遅刻時間を計算します。
         """
-        # 指定された月の日付範囲内のタイムスタンプを取得
-        timestamps = cls.objects.filter(user=user, clock_in_time__date__gte=month_start, clock_in_time__date__lte=today)
+        timestamps = cls.objects.filter(
+            user=user,
+            clock_in_time__date__gte=month_start,
+            clock_in_time__date__lte=today
+        )
 
         total_worked_hours = 0
         total_overtime_hours = 0
         total_early_leave_hours = 0
         total_late_arrival_hours = 0
 
-        # 各タイムスタンプごとに勤務時間などを集計
         for timestamp in timestamps:
             total_worked_hours += timestamp.calculate_worked_hours()
             total_overtime_hours += timestamp.calculate_overtime()
@@ -98,11 +100,12 @@ class TimeStamp(models.Model):
             total_late_arrival_hours += timestamp.calculate_late_arrival()
 
         return {
-            'total_worked_hours': total_worked_hours,
-            'total_overtime_hours': total_overtime_hours,
-            'total_early_leave_hours': total_early_leave_hours,
-            'total_late_arrival_hours': total_late_arrival_hours
+            'total_worked_hours': round(total_worked_hours, 2),
+            'total_overtime_hours': round(total_overtime_hours, 2),
+            'total_early_leave_hours': round(total_early_leave_hours, 2),
+            'total_late_arrival_hours': round(total_late_arrival_hours, 2),
         }
+
 
     def __str__(self):
         return f"{self.user.name} - {self.clock_in_time} to {self.clock_out_time if self.clock_out_time else '未退勤'}"

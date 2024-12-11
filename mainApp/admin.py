@@ -1,4 +1,3 @@
-# admin.py
 from django.contrib import admin
 from mainApp.models.user_master import User_Master
 from mainApp.models.leave_type import LeaveType
@@ -35,11 +34,16 @@ class TimeSheetAdmin(admin.ModelAdmin):
 class ShiftAdmin(admin.ModelAdmin):
     list_display = ('get_employee_number', 'user', 'date', 'weekday', 'start_time', 'end_time', 'is_weekend')
     list_filter = ('user', 'date', 'is_weekend')
-    search_fields = ('user__name', 'date', 'weekday')
+    search_fields = ('user__name', 'date')
 
     def get_employee_number(self, obj):
         return obj.user.employee_number
     get_employee_number.short_description = 'Employee Number'
+
+    def weekday(self, obj):
+        return obj.date.strftime('%A')  # 英語で曜日を表示
+    weekday.short_description = 'Weekday'
+
 
 
 @admin.register(PaidLeave)

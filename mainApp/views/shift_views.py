@@ -15,24 +15,26 @@ def upload_shifts(request):
             csv_file = form.cleaned_data['csv_file']
             decoded_file = csv_file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
-            updated_shifts = 0  # 更新されたシフトの数をカウント
-            failed_rows = []  # 失敗した行のリスト
+            updated_shifts = 0
+            failed_rows = []  # エラー行を記録
 
             for row in reader:
                 try:
                     user = User_Master.objects.get(employee_number=row['employee_number'])
 
-                    # CSVの日付フォーマット 'YYYY/MM/DD' を 'YYYY-MM-DD' に変換
+                    # 日付と時間の処理
                     date = datetime.strptime(row['date'], '%Y/%m/%d').date()
-                    start_time = row['start_time'] if row['start_time'] else None
-                    end_time = row['end_time'] if row['end_time'] else None
+                    start_time = datetime.strptime(row['start_time'], '%H:%M:%S').time() if row['start_time'] else None
+                    end_time = datetime.strptime(row['end_time'], '%H:%M:%S').time() if row['end_time'] else None
 
-                    break_time_str = row['break_time'] if row['break_time'] else '0:00:00'
-                    (hours, minutes, seconds) = map(int, break_time_str.split(':'))
-                    break_time = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+                    # 休憩時間の処理（未設定の場合はNoneに設定）
+                    break_time = None
+                    if row['break_time']:
+                        (hours, minutes, seconds) = map(int, row['break_time'].split(':'))
+                        break_time = timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
-                    # 既存のシフトを確認し、更新または作成
-                    shift, created = Shift.objects.update_or_create(
+                    # シフトの保存
+                    Shift.objects.update_or_create(
                         user=user,
                         date=date,
                         defaults={
@@ -43,22 +45,17 @@ def upload_shifts(request):
                     )
                     updated_shifts += 1
 
-                except User_Master.DoesNotExist:
-                    failed_rows.append(f"社員番号 {row['employee_number']} のユーザーが見つかりません。")
-                    continue
-                except ValueError as e:
-                    failed_rows.append(f"行エラー: {str(e)}（データ: {row}）")
+                except Exception as e:
+                    failed_rows.append(f"行エラー: {row} - {str(e)}")
                     continue
 
-            # 成功メッセージを設定
+            # 成功と失敗メッセージ
             if updated_shifts > 0:
                 messages.success(request, f'{updated_shifts} 件のシフトが正常にアップロードされました。')
-
-            # 失敗メッセージを設定
             if failed_rows:
-                messages.error(request, f"{len(failed_rows)} 件のシフトが失敗しました。詳細: " + " | ".join(failed_rows))
+                messages.error(request, f'{len(failed_rows)} 件のシフトが失敗しました。詳細: ' + ', '.join(failed_rows))
 
-            return redirect('upload_shifts')  # アップロードページにリダイレクト
+            return redirect('upload_shifts')
 
     else:
         form = ShiftUploadForm()

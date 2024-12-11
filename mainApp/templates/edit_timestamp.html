@@ -23,11 +23,17 @@
   <p>名前: {{ employee.name }}</p>
   <p>役職: {{ employee.position }}</p>
   
-  <form method="post">
+  <form method="post" onsubmit="return confirmUpdate()">
     {% csrf_token %}
     {{ form.as_p }}  <!-- フォームのフィールドを表示 -->
     <button type="submit">更新</button>
   </form>
   {% endif %}
 </div>
+
+<script>
+  function confirmUpdate() {
+    return confirm("情報を更新しますか？");
+  }
+</script>
 {% endblock %}

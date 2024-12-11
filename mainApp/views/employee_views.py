@@ -55,9 +55,11 @@ def edit_employee(request):
     if request.method == 'POST':
         form = EmployeeEditForm(request.POST, instance=employee, is_self=is_self, is_manager=is_manager, is_superior=is_superior)
         if form.is_valid():
-            form.save()
-            messages.success(request, '社員情報が更新されました。')
-
+            if form.has_changed():  # フォームが変更されている場合のみ保存
+                form.save()
+                messages.success(request, '社員情報が更新されました。')
+            else:
+                messages.info(request, '変更がありません。')  # 変更がない場合のメッセージ
     else:
         form = EmployeeEditForm(instance=employee, is_self=is_self, is_manager=is_manager, is_superior=is_superior)
 
@@ -67,3 +69,4 @@ def edit_employee(request):
         'is_self': is_self,
     }
     return render(request, 'edit_employee.html', context)
+
